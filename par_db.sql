@@ -74,6 +74,7 @@ CREATE TABLE ParRules (
     RuleName VARCHAR(255) NOT NULL UNIQUE,
     [Description] VARCHAR(255) NULL,
     ParValue INT NOT NULL, 
+	IsActive BIT NULL,
     OrderStatus BIT NOT NULL, 
 	CreatedByUser INT NOT NULL,
     DateCreated DATETIME DEFAULT GETDATE(),
