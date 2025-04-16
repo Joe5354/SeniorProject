@@ -1,0 +1,40 @@
+﻿/* Global reset for body */
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+/* Apply some padding around the content */
+.container {
+    max-width: 100%;
+    padding: 10px; /* Adds padding to the container */
+}
+
+/* Apply smaller font size for the table */
+.p-datatable th, .p-datatable td {
+    font-size: 12px; /* Reduce font size */
+    padding: 8px; /* Reduce padding to fit more data */
+}
+
+/* Optionally adjust width of individual columns */
+.p-datatable .p-column {
+    min-width: 70px; /* Ensure columns aren't too wide */
+}
+
+/* Max-width for the table */
+.p-datatable {
+    margin: 30px;
+    width: 100%;
+    table-layout: fixed; /* Make table layout fixed to avoid overflow */
+    overflow-x: auto;
+}
+
+/* Optional: Adjust padding for the header and footer */
+.p-datatable-header, .p-datatable-footer {
+    padding: 5px 10px;
+}
+
+/* Add horizontal scroll to the table if needed */
+.p-datatable-scrollable-body {
+    overflow-x: auto; /* Allow horizontal scroll */
+}
