@@ -24,6 +24,18 @@ function App() {
     const [userId, setUserId] = useState(null); {/*who is using the app? (userId) */ }
     const [selectedPage, setSelectedPage] = useState("items"); {/* what is displayed on the page? (dependent on menuBar selection) */ }
     const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
+    const [roleData, setRoleData] = useState(null);
+    const [userDetails, setUserDetails] = useState(null);
+    const handlePermissionsFetched = (permissions, userData) => {
+        setRoleData(permissions);
+        setUserDetails(userData);
+    };
+    useEffect(() => {
+        if (userDetails) {
+            console.log("User details updated:", userDetails);
+        }
+    }, [userDetails]);
+
     const menuItems = [
         {
             label: "Inventory",
@@ -49,11 +61,39 @@ function App() {
     return (
         <div className="ParDashboard">
             <UserIDInput setUserId={setUserId} /> {/* display and use UserIdInput form */}
-            {userId && <UserData userId={userId} />} {/* fetch user corresponding to UserIDInput user input and their userRoleId */}
+            <UserData userId={userId} onPermissionsFetched={handlePermissionsFetched} />
+            <div>{userDetails && (
+                <div>
+                    <h2>User Details</h2>
+                    <p>First Name: {userDetails.firstName}</p>
+                    <p>Last Name: {userDetails.lastName}</p>
+                    <p>Username: {userDetails.username}</p>
+                    <p>Employee ID: {userDetails.employeeId}</p>
+                </div>
+            )}
+            </div>
+            {/*<div>{roleData ? (
+                <ul>
+                    {Object.keys(roleData).map((permission) => (
+                        <li key={permission}>
+                            {permission}: {roleData[permission] ? "Yes" : "No"}
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <div>No permissions available</div>
+            )}
+            </div>*/}
             <Menubar model={menuItems} />{/* Render the menubar */}
             <div style={{ marginTop: "2rem" }}>
                 {selectedPage === "items" && <AllItemsList />}  {/* if selectedtable state == "items", then display my AllitemsList component defined in ./AllItemsList.jsx */}
-                {selectedPage === "rules" && <RulesList userId={userId} />}     {/* Pass userId to RulesList */}
+                {selectedPage === "rules" && roleData && (
+                    <RulesList
+                        userData={userDetails}
+                        createRule={roleData.createRule}
+                        editRule={roleData.EditRule}
+                    />
+                )}  
                 {selectedPage === "users" &&
                     <div>
                         <UsersList />
@@ -73,7 +113,7 @@ function App() {
                             <CreateNewUserForm onClose={() => setShowCreateUserDialog(false)} />
                         </Dialog>
                     </div>}     {/*     ^^ ./Users.jsx  */}
-                {selectedPage === "notes" && <RulesList userId={userId} />}  {/* Pass userId to RulesList here too */}
+                {selectedPage === "notes" }  {/* Pass userId to RulesList here too */}
             </div>
 
         </div>

@@ -8,7 +8,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Checkbox } from "primereact/checkbox";
 import { Toast } from "primereact/toast";
 
-function CreateParRule({ visible, onHide, onSuccess, userId }) {
+function CreateParRule({ visible, onHide, onSuccess, userData }) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const toastRef = useRef(null);
@@ -20,13 +20,10 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
     const [parItemId, setParItemId] = useState(null);
     const [isActive, setIsActive] = useState(true);
 
-    // State for user info display
-    const [userInfo, setUserInfo] = useState(null);
-
     // Debugging state
     const [apiError, setApiError] = useState(null);
 
-    // Fetch items and user info when component mounts
+    // Fetch items when component mounts
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -40,17 +37,6 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
                 }
                 const itemsData = await itemsResponse.json();
                 console.log("Items data fetched:", itemsData);
-
-                // If userId is provided, fetch user info
-                if (userId) {
-                    const userResponse = await fetch(`https://localhost:7245/api/User/${userId}`);
-                    if (!userResponse.ok) {
-                        throw new Error("Failed to fetch user info");
-                    }
-                    const userData = await userResponse.json();
-                    console.log("User data fetched:", userData);
-                    setUserInfo(userData);
-                }
 
                 setItems(itemsData);
 
@@ -70,7 +56,7 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
         if (visible) {
             fetchData();
         }
-    }, [visible, userId]);
+    }, [visible, userData]);
 
     // Reset form when dialog is opened
     useEffect(() => {
@@ -127,7 +113,7 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
                 return;
             }
 
-            if (!userId) {
+            if (!userData.userId) {
                 console.log("Validation error: No user is logged in");
                 toastRef.current.show({
                     severity: "error",
@@ -144,7 +130,7 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
                 parValue,
                 parItemId,
                 isActive,
-                createdByUser: userId, // Use the logged-in user's ID from App
+                createdByUser: userData.userId, // Use the logged-in user's ID from App
                 dateCreated: new Date().toISOString()
             };
 
@@ -217,7 +203,7 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
                     icon="pi pi-check"
                     className="p-button-primary"
                     onClick={handleSubmit}
-                    disabled={loading || !userId}
+                    disabled={loading || !userData.userId}
                 />
             </div>
         );
@@ -247,7 +233,7 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
                             </div>
                         )}
 
-                        {!userId && (
+                        {!userData.userId && (
                             <div className="mb-3 p-message p-message-warn">
                                 <div className="p-message-text">
                                     Please log in to create a PAR rule
@@ -255,10 +241,10 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
                             </div>
                         )}
 
-                        {userInfo && (
+                        {userData && (
                             <div className="mb-3 p-message p-message-info">
                                 <div className="p-message-text">
-                                    Creating rule as: {userInfo.firstName} {userInfo.lastName}
+                                    Creating rule as: {userData.firstName} {userData.lastName}
                                 </div>
                             </div>
                         )}
@@ -271,7 +257,7 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
                                 onChange={(e) => setRuleName(e.target.value)}
                                 required
                                 className="w-full mt-1"
-                                disabled={!userId}
+                                disabled={!userData.userId}
                             />
                         </div>
 
@@ -285,7 +271,7 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
                                 placeholder="Select an Item"
                                 required
                                 className="w-full mt-1"
-                                disabled={!userId}
+                                disabled={!userData.userId}
                             />
                         </div>
 
@@ -298,7 +284,7 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
                                 min={0}
                                 showButtons
                                 className="w-full mt-1"
-                                disabled={!userId}
+                                disabled={!userData.userId}
                             />
                         </div>
 
@@ -310,7 +296,7 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
                                 onChange={(e) => setDescription(e.target.value)}
                                 rows={3}
                                 className="w-full mt-1"
-                                disabled={!userId}
+                                    disabled={!userData.userId}
                             />
                         </div>
 
@@ -319,7 +305,7 @@ function CreateParRule({ visible, onHide, onSuccess, userId }) {
                                 inputId="isActive"
                                 checked={isActive}
                                 onChange={(e) => setIsActive(e.checked)}
-                                disabled={!userId}
+                                    disabled={!userData.userId}
                             />
                             <label htmlFor="isActive" className="ml-2">Active</label>
                         </div>

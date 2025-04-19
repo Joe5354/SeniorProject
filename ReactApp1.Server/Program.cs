@@ -86,5 +86,7 @@ app.MapItemEndpoints();
 
 app.MapParRuleEndpoints();
 
+app.MapUserRoleEndpoints();
+
 
 app.Run();

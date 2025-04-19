@@ -8,13 +8,13 @@ import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
-function RulesList({ userId }) {
+function RulesList({ userData, createRule, editRule }) {
     const [rules, setRules] = useState([]);
-    const [users, setUsers] = useState([]);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [loading, setLoading] = useState(true);
     const toast = useRef(null);
-
+    console.log("userId:", userData.userId);
+    console.log("createRule:", createRule);
     // Fetch rules from API
     const fetchRules = () => {
         console.log("Fetching rules...");
@@ -46,38 +46,11 @@ function RulesList({ userId }) {
             });
     };
 
-    // Fetch users from API
-    const fetchUsers = () => {
-        console.log("Fetching users...");
-
-        fetch("https://localhost:7245/api/User")
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Failed to fetch users");
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log("Users fetched:", data);
-                setUsers(data);
-            })
-            .catch((error) => {
-                console.error("Error fetching users:", error);
-                if (toast.current) {
-                    toast.current.show({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to fetch users: ' + error.message,
-                        life: 3000
-                    });
-                }
-            });
-    };
+    
 
     // Fetch data on component mount
     useEffect(() => {
         fetchRules();
-        fetchUsers();
     }, []);
 
     // Format date for display
@@ -96,15 +69,10 @@ function RulesList({ userId }) {
         );
     };
 
-    // Get user name by ID
-    const getUserName = (userId) => {
-        const user = users.find(u => u.userId === userId);
-        return user ? `${user.firstName} ${user.lastName}` : `User ID: ${userId}`;
-    };
-
+    
     // Created by template
     const createdByTemplate = (rowData) => {
-        return getUserName(rowData.createdByUser);
+        //return getUserName(rowData.createdByUser);
     };
 
     // Handle successful rule creation
@@ -120,11 +88,17 @@ function RulesList({ userId }) {
             <div className="flex justify-content-between align-items-center mb-3">
                 <h1>PAR Rules Management</h1>
                 <Button
-                    label="Create New Rule"
+                    label={ createRule? "Create Rule": "No Permission" }
                     icon="pi pi-plus"
                     onClick={() => setShowCreateDialog(true)}
-                    disabled={!userId}
-                    tooltip={!userId ? "Please log in to create rules" : "Create a new PAR rule"}
+                    disabled={!userData.userId || !createRule}
+                    tooltip={
+                        !userData.userId
+                        ? "Please log in to create rules"
+                        : !createRule
+                        ? "You don't have permission to create rules"
+                        : "Create a new PAR rule"
+                    }
                 />
             </div>
 
@@ -164,7 +138,7 @@ function RulesList({ userId }) {
                 visible={showCreateDialog}
                 onHide={() => setShowCreateDialog(false)}
                 onSuccess={handleRuleCreated}
-                userId={userId}
+                userData={userData}
             />
         </div>
     );
