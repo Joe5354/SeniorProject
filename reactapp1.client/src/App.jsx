@@ -89,7 +89,7 @@ function App() {
                             <CreateNewUserForm onClose={() => setShowCreateUserDialog(false)} />
                         </Dialog>
                     </div>}     {/*     ^^ ./Users.jsx  */}
-                {selectedPage === "notes" && <RulesList />}
+                {selectedPage === "notes" && <RulesList userId={userId} />}  {/* Pass userId to RulesList here too */}
             </div>
             
         </div>
