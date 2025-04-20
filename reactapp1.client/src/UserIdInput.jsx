@@ -25,7 +25,7 @@ function UserIDInput({ setUserId }) {
                         type="text"
                         value={idInputValue}
                         onChange={handleIdInputChange}
-                        placeholder="User ID:"
+                        placeholder="Employee ID:"
                     />
                 </label>
                 <button type="submit">Submit</button>

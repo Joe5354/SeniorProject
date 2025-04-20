@@ -63,7 +63,6 @@ public static class ParRuleEndpoints
             var affected = await db.ParRules
                 .Where(model => model.RuleId == ruleid)
                 .ExecuteUpdateAsync(setters => setters
-                  .SetProperty(m => m.RuleId, parRule.RuleId)
                   .SetProperty(m => m.ParItemId, parRule.ParItemId)
                   .SetProperty(m => m.RuleName, parRule.RuleName)
                   .SetProperty(m => m.Description, parRule.Description)

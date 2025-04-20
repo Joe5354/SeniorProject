@@ -67,17 +67,7 @@ function UserData({ userId, onPermissionsFetched }) {
         return <div>No data available</div>; // Fallback when data is not available
     }
 
-    return (
-        <div>
-            <h1>User Data</h1>
-            <p>User ID: {userData.userId}</p>
-            <p>Role ID: {userData.userRoleId}</p>
-            <p>First Name: {userData.firstName}</p>
-            <p>Last Name: {userData.lastName}</p>
-            <p>Username: {userData.username}</p>
-            <p>Employee ID: {userData.employeeId}</p>
-        </div>
-    );
+    return null;
 }
 
 export default UserData;

@@ -88,5 +88,9 @@ app.MapParRuleEndpoints();
 
 app.MapUserRoleEndpoints();
 
+app.MapCategoryEndpoints();
+
+app.MapSubCategoryEndpoints();
+
 
 app.Run();
