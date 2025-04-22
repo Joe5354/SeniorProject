@@ -60,39 +60,70 @@ public static class ParRuleEndpoints
 
         group.MapPut("/{ruleId}", async Task<Results<Ok, NotFound>> (int ruleid, ParRule parRule, parDbContext db) =>
         {
-            var affected = await db.ParRules
+            // Step 1: Retrieve the rule to update
+            var existingRule = await db.ParRules
                 .Where(model => model.RuleId == ruleid)
-                .ExecuteUpdateAsync(setters => setters
-                  .SetProperty(m => m.ParItemId, parRule.ParItemId)
-                  .SetProperty(m => m.RuleName, parRule.RuleName)
-                  .SetProperty(m => m.Description, parRule.Description)
-                  .SetProperty(m => m.ParValue, parRule.ParValue)
-                  .SetProperty(m => m.CreatedByUser, parRule.CreatedByUser)
-                  .SetProperty(m => m.IsActive, parRule.IsActive)
-                  .SetProperty(m => m.DateCreated, parRule.DateCreated)
-                  );
-            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
+                .FirstOrDefaultAsync();
+
+            if (existingRule == null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            // Step 2: If the rule is being set to active, deactivate any other active rule for the same ParItemId
+            if (parRule.IsActive)
+            {
+                var activeRules = await db.ParRules
+                    .Where(model => model.ParItemId == parRule.ParItemId && model.IsActive)
+                    .ToListAsync();
+
+                foreach (var activeRule in activeRules)
+                {
+                    activeRule.IsActive = false;  // Deactivate other active rules
+                    db.ParRules.Update(activeRule);
+                }
+            }
+
+            // Step 3: Update the rule
+            existingRule.ParItemId = parRule.ParItemId;
+            existingRule.RuleName = parRule.RuleName;
+            existingRule.Description = parRule.Description;
+            existingRule.ParValue = parRule.ParValue;
+            existingRule.CreatedByUser = parRule.CreatedByUser;
+            existingRule.IsActive = parRule.IsActive;
+            existingRule.DateCreated = parRule.DateCreated;
+
+            db.ParRules.Update(existingRule);
+            await db.SaveChangesAsync();
+
+            return TypedResults.Ok();
         })
         .WithName("UpdateParRule")
         .WithOpenApi();
 
         group.MapPost("/", async (ParRule parRule, parDbContext db) =>
         {
+            // Step 1: Deactivate any active rule for the same ParItemId
+            if (parRule.IsActive)
+            {
+                var activeRules = await db.ParRules
+                    .Where(model => model.ParItemId == parRule.ParItemId && model.IsActive)
+                    .ToListAsync();
+
+                foreach (var activeRule in activeRules)
+                {
+                    activeRule.IsActive = false;  // Deactivate other active rules
+                    db.ParRules.Update(activeRule);
+                }
+            }
+
+            // Step 2: Add the new rule
             db.ParRules.Add(parRule);
             await db.SaveChangesAsync();
-            return TypedResults.Created($"/api/ParRule/{parRule.RuleId}",parRule);
+
+            return TypedResults.Created($"/api/ParRule/{parRule.RuleId}", parRule);
         })
         .WithName("CreateParRule")
-        .WithOpenApi();
-
-        group.MapDelete("/{ruleId}", async Task<Results<Ok, NotFound>> (int ruleid, parDbContext db) =>
-        {
-            var affected = await db.ParRules
-                .Where(model => model.RuleId == ruleid)
-                .ExecuteDeleteAsync();
-            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
-        })
-        .WithName("DeleteParRule")
         .WithOpenApi();
     }
 }

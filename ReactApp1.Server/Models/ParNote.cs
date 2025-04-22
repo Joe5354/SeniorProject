@@ -58,7 +58,6 @@ public static class ParNoteEndpoints
             var affected = await db.ParNotes
                 .Where(model => model.NoteId == noteid)
                 .ExecuteUpdateAsync(setters => setters
-                  .SetProperty(m => m.NoteId, parNote.NoteId)
                   .SetProperty(m => m.ParItemId, parNote.ParItemId)
                   .SetProperty(m => m.RuleId, parNote.RuleId)
                   .SetProperty(m => m.Note, parNote.Note)

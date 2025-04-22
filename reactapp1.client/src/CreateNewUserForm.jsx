@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
-import { Button } from 'primereact/button';
+import React, { useState, useRef, useEffect } from "react";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
+import { Button } from "primereact/button";
+import { Toast } from "primereact/toast";
 
-function CreateNewUserForm({ onClose }) {
+function CreateNewUserForm({ visible, onHide, onSuccess }) {
+    const toastRef = useRef(null);
+
     const [formData, setFormData] = useState({
         username: '',
         firstName: '',
@@ -11,37 +17,11 @@ function CreateNewUserForm({ onClose }) {
         userRoleId: ''
     });
 
-    const [successMessage, setSuccessMessage] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
-    
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    const [roles, setRoles] = useState([]);
 
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setSuccessMessage('');
-        setErrorMessage('');
-
-        try {
-            const response = await fetch('https://localhost:7245/api/user', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to create user');
-            }
-
-            setSuccessMessage('User created successfully!');
+    useEffect(() => {
+        if (visible) {
+            // Reset form and load roles
             setFormData({
                 username: '',
                 firstName: '',
@@ -50,58 +30,123 @@ function CreateNewUserForm({ onClose }) {
                 employeeId: '',
                 userRoleId: ''
             });
+            fetchRoles();
+        }
+    }, [visible]);
+
+    const fetchRoles = async () => {
+        try {
+            const res = await fetch("https://localhost:7245/api/UserRole");
+            if (!res.ok) throw new Error("Failed to fetch roles");
+            const data = await res.json();
+            setRoles(data);
         } catch (err) {
-            setErrorMessage(err.message);
+            toastRef.current.show({
+                severity: "error",
+                summary: "Error",
+                detail: err.message,
+            });
         }
     };
 
-    return (
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = async () => {
+        try {
+            const response = await fetch('https://localhost:7245/api/user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`Failed to create user: ${text}`);
+            }
+
+            const result = await response.json();
+            toastRef.current.show({
+                severity: "success",
+                summary: "Success",
+                detail: "User created successfully!"
+            });
+
+            if (onSuccess) onSuccess(result);
+            if (onHide) onHide();
+
+        } catch (err) {
+            toastRef.current.show({
+                severity: "error",
+                summary: "Error",
+                detail: err.message
+            });
+        }
+    };
+
+    const renderFooter = () => (
         <div>
-            <h2>Create New User</h2>
-            <form onSubmit={handleSubmit}>
-                <label>
-                    Username:
-                    <input name="username" value={formData.username} onChange={handleChange} required />
-                </label><br />
-                <label>
-                    First Name:
-                    <input name="firstName" value={formData.firstName} onChange={handleChange} required />
-                </label><br />
-                <label>
-                    Last Name:
-                    <input name="lastName" value={formData.lastName} onChange={handleChange} required />
-                </label><br />
-                <label>
-                    Email:
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} required />
-                </label><br />
-                <label>
-                    Employee ID:
-                    <input name="employeeId" value={formData.employeeId} onChange={handleChange} required />
-                </label><br />
-                <label>
-                    Role ID:
-                    <input type="number" name="userRoleId" value={formData.userRoleId} onChange={handleChange} required />
-                </label><br />
-                <div className="p-dialog-footer" style={{ marginTop: '1rem' }}>
-                    <Button
-                        label="Cancel"
-                        icon="pi pi-times"
-                        className="p-button-secondary"
-                        onClick={onClose}
-                        type="button"
-                    />
-                    <Button
-                        label="Create"
-                        icon="pi pi-check"
-                        className="p-button-success"
-                        type="submit"
+            <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={onHide} />
+            <Button label="Create" icon="pi pi-check" className="p-button-success" onClick={handleSubmit} />
+        </div>
+    );
+
+    return (
+        <>
+            <Toast ref={toastRef} />
+            <Dialog
+                header="Create New User"
+                visible={visible}
+                style={{ width: "500px" }}
+                modal
+                className="p-fluid"
+                footer={renderFooter()}
+                onHide={onHide}
+            >
+                <div className="p-field mb-3">
+                    <label htmlFor="username" className="font-bold">Username*</label>
+                    <InputText id="username" name="username" value={formData.username} onChange={handleChange} required />
+                </div>
+
+                <div className="p-field mb-3">
+                    <label htmlFor="firstName" className="font-bold">First Name*</label>
+                    <InputText id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required />
+                </div>
+
+                <div className="p-field mb-3">
+                    <label htmlFor="lastName" className="font-bold">Last Name*</label>
+                    <InputText id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} required />
+                </div>
+
+                <div className="p-field mb-3">
+                    <label htmlFor="email" className="font-bold">Email*</label>
+                    <InputText id="email" name="email" type="email" value={formData.email} onChange={handleChange} required />
+                </div>
+
+                <div className="p-field mb-3">
+                    <label htmlFor="employeeId" className="font-bold">Employee ID*</label>
+                    <InputText id="employeeId" name="employeeId" value={formData.employeeId} onChange={handleChange} required />
+                </div>
+
+                <div className="p-field mb-3">
+                    <label htmlFor="userRoleId" className="font-bold">Role*</label>
+                    <Dropdown
+                        id="userRoleId"
+                        name="userRoleId"
+                        value={formData.userRoleId}
+                        options={roles.map(role => ({ label: role.description, value: role.userRoleId }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, userRoleId: e.value }))}
+                        placeholder="Select a Role"
+                        required
                     />
                 </div>
-            </form>
-            {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-            {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-        </div>
+            </Dialog>
+        </>
     );
 }
 

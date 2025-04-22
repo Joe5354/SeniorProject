@@ -4,61 +4,98 @@ import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Dropdown } from 'primereact/dropdown';
-import 'primereact/resources/themes/saga-blue/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
+import { MultiSelect } from 'primereact/multiselect';
 
 function AllItemsList({ permissionData }) {
     const [items, setItems] = useState([]);
+    const [filteredItems, setFilteredItems] = useState([]);
+    const [products, setProducts] = useState([]);
     const [cats, setCats] = useState([]);
     const [sCats, setSCats] = useState([]);
+    const [selectedProducts, setSelectedProducts] = useState([]);
+    const [uniqueProductsOnly, setUniqueProductsOnly] = useState(false);
+    const [totalCountFilter, setTotalCountFilter] = useState(null);
     const [editingRow, setEditingRow] = useState(null);
     const [editedItem, setEditedItem] = useState(null);
-    const sourceStatuses = [
-        { code: "in_stock", label: "In Stock" },
-        { code: "out_of_stock", label: "Out of Stock" },
-        { code: "backordered", label: "Backordered" },
-        { code: "discontinued", label: "Discontinued" }
-    ];
-    const sources = [
-        { code: "dell", label: "DELL" },
-        { code: "srcExamp2", label: "src2" },
-        { code: "srcExamp3", label: "src3" },
-        { code: "srcExamp4", label: "src4" }
-    ];
+
     useEffect(() => {
         fetch("https://localhost:7245/api/item")
             .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Failed to fetch items");
-                }
+                if (!response.ok) throw new Error("Failed to fetch items");
                 return response.json();
             })
-            .then((data) => setItems(data))
+            .then((data) => {
+                setItems(data);
+                setFilteredItems(data);
+            })
             .catch((error) => console.error("Error fetching items:", error));
+
+        fetch("https://localhost:7245/api/Product")
+            .then((response) => {
+                if (!response.ok) throw new Error("Failed to fetch products");
+                return response.json();
+            })
+            .then((data) => setProducts(data))
+            .catch((error) => console.error("Error fetching products:", error));
 
         fetch("https://localhost:7245/api/category")
             .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Failed to fetch cats");
-                }
+                if (!response.ok) throw new Error("Failed to fetch categories");
                 return response.json();
             })
             .then((data) => setCats(data))
-            .catch((error) => console.error("Error fetching cats:", error));
-        console.log("CATEGORIES: "+JSON.stringify(cats, null, 2));
+            .catch((error) => console.error("Error fetching categories:", error));
+
         fetch("https://localhost:7245/api/subCategory")
             .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Failed to fetch subCats");
-                }
+                if (!response.ok) throw new Error("Failed to fetch subCategories");
                 return response.json();
             })
             .then((data) => setSCats(data))
-            .catch((error) => console.error("Error fetching subCats:", error));
+            .catch((error) => console.error("Error fetching subCategories:", error));
+    }, []);
 
-    }, []); // Runs once on mount
+    useEffect(() => {
+        applyFilters();
+    }, [items, selectedProducts, uniqueProductsOnly, totalCountFilter]);
 
+    const applyFilters = () => {
+        let filtered = [...items];
+
+        if (selectedProducts.length > 0) {
+            filtered = filtered.filter(item => selectedProducts.includes(item.productId));
+        }
+
+        if (uniqueProductsOnly) {
+            const seen = new Set();
+            filtered = filtered.filter(item => {
+                if (seen.has(item.productId)) return false;
+                seen.add(item.productId);
+                return true;
+            });
+        }
+
+        if (totalCountFilter !== null) {
+            filtered = filtered.filter(item =>
+                totalCountFilter ? item.totalCount !== null : item.totalCount === null
+            );
+        }
+
+        setFilteredItems(filtered);
+    };
+
+    const productOptions = products.filter(p =>
+        items.some(i => i.productId === p.productId)
+    );
+
+    const getProductName = (parItemId) => {
+        const item = items.find(i => i.parItemId === parItemId);
+        if (item) {
+            const product = products.find(p => p.productId === item.productId);
+            return product ? product.name : "No Product Name";
+        }
+        return "No Product Name";
+    };
     const handleEditChange = (e, field) => {
         const { value } = e.target;
         setEditedItem((prevState) => ({
@@ -109,7 +146,7 @@ function AllItemsList({ permissionData }) {
 
     const getCategoryDescription = (catId) => {
         const cat = cats.find(c => c.catId === catId);
-        return cat ? cat.catDesc : catId; 
+        return cat ? cat.catDesc : catId;
     };
 
     const getSubCategoryDescription = (subCatId) => {
@@ -155,28 +192,119 @@ function AllItemsList({ permissionData }) {
         return rowData[field]; // Display value if not in edit mode
     };
 
+    const ItemFilters = ({
+        selectedProducts, setSelectedProducts,
+        uniqueProductsOnly, setUniqueProductsOnly,
+        totalCountFilter, setTotalCountFilter,
+        clearAllFilters,
+        productOptions
+    }) => {
+        return (
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+                {/* Product Filter */}
+                <div className="flex items-center gap-2">
+                    <MultiSelect
+                        value={selectedProducts}
+                        options={productOptions}
+                        optionLabel="name"
+                        optionValue="productId"
+                        onChange={(e) => {
+                            const value = e.value.length > 0 ? e.value : [];
+                            setSelectedProducts(value);
+                        }}
+                        placeholder="Filter by Product"
+                        display="chip"
+                        className="w-64"
+                    />
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-outlined p-button-danger p-button-sm"
+                        onClick={() => setSelectedProducts([])}
+                        tooltip="Clear Product Filter"
+                    />
+                </div>
+
+                {/* Unique Products Filter */}
+                <div className="flex items-center gap-2">
+                    <Dropdown
+                        value={uniqueProductsOnly}
+                        options={[
+                            { label: 'Only Show Unique Products', value: true },
+                            { label: '----', value: false }
+                        ]}
+                        onChange={(e) => setUniqueProductsOnly(e.value)}
+                        placeholder="Unique Products Only"
+                        className="w-48"
+                    />
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-outlined p-button-danger p-button-sm"
+                        onClick={() => setUniqueProductsOnly(false)}
+                        tooltip="Clear Unique Filter"
+                    />
+                </div>
+
+                {/* Total Count Null/Not Null */}
+                <div className="flex items-center gap-2">
+                    <Dropdown
+                        value={totalCountFilter}
+                        options={[
+                            { label: 'Has Total Count (Not Serialized)', value: true },
+                            { label: 'No Total Count (Serialized)', value: false }
+                        ]}
+                        onChange={(e) => setTotalCountFilter(e.value)}
+                        placeholder="Total Count"
+                        className="w-48"
+                    />
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-outlined p-button-danger p-button-sm"
+                        onClick={() => setTotalCountFilter(null)}
+                        tooltip="Clear Total Count Filter"
+                    />
+                </div>
+
+                {/* Clear All Filters */}
+                <Button
+                    label="Clear All"
+                    icon="pi pi-filter-slash"
+                    className="p-button-secondary p-button-sm"
+                    onClick={clearAllFilters}
+                />
+            </div>
+        );
+    };
+
     return (
         <div className="p-4">
-
             <h1>Item List</h1>
+
+            <ItemFilters
+                selectedProducts={selectedProducts}
+                setSelectedProducts={setSelectedProducts}
+                uniqueProductsOnly={uniqueProductsOnly}
+                setUniqueProductsOnly={setUniqueProductsOnly}
+                totalCountFilter={totalCountFilter}
+                setTotalCountFilter={setTotalCountFilter}
+                clearAllFilters={() => {
+                    setSelectedProducts([]);
+                    setUniqueProductsOnly(false);
+                    setTotalCountFilter(null);
+                }}
+                productOptions={productOptions}
+            />
+
             <DataTable
-                value={items}
+                value={filteredItems}
                 paginator
-                rows={5}
+                rows={10}
+                rowsPerPageOptions={[10, 20, 50]}
                 responsiveLayout="scroll"
                 dataKey="parItemId"
-                filterDisplay="menu"
-                style={{ maxWidth: "100%" }}  // Max width for responsiveness
-                scrollable // Add scrolling
+                scrollable
                 scrollHeight="400px"
             >
-                <Column field="parItemId" header="Par Item ID" sortable filter filterPlaceholder="Search" />
-                <Column field="itemId" header="Item ID" sortable filter filterPlaceholder="Search" />
-                <Column field="productId" header="Product ID" sortable filter filterPlaceholder="Search" />
-                <Column field="serialNumber" header="Serial Number" sortable filter filterPlaceholder="Search" />
-                <Column field="barcode" header="Barcode" sortable filter filterPlaceholder="Search" />
-                <Column field="totalCount" header="Total Count" sortable filter filterPlaceholder="Search" />
-
+                <Column field="productId" header="Product Name" sortable body={(rowData) => getProductName(rowData.parItemId)} syle={{width:'250px'}} />
                 <Column field="catId"
                     header="Category"
                     sortable
@@ -185,53 +313,29 @@ function AllItemsList({ permissionData }) {
                         editableDropdownCell("catId", cats, rowData, "catDesc", "catId")
                     }
                 />
-                <Column field="subCatId" header="Subcategory" sortable filter filterPlaceholder="Search"
-                    body={(rowData) => {
-                        if (editingRow && editedItem) {
-                            return editableDropdownCell(
-                                "subCatId",
-                                sCats.filter((subCat) => subCat.catId === editedItem.catId),
-                                editedItem,
-                                "subCatDesc",
-                                "subCatId"
-                            );
-                        } else {
-                            const subCat = sCats.find((sCat) => sCat.subCatId === rowData.subCatId);
-                            return subCat ? subCat.subCatDesc : rowData.subCatId;
-                        }
-                    }} />
-
-                <Column field="source1Name" header="Source 1 Name" sortable filter filterPlaceholder="Search"
+                <Column
+                    field="subCatId"
+                    header="Subcategory"
+                    sortable
+                    filter
+                    filterPlaceholder="Search"
                     body={(rowData) =>
-                        editableDropdownCell("source1Name", sources, rowData, "label", "code")
-                    } />
-                <Column field="source1Status" header="Source 1 Status" sortable filter filterPlaceholder="Search"
-
-                    body={(rowData) =>
-                        editableDropdownCell("source1Status", sourceStatuses, rowData, "label", "code")
-                    } />
-
-                <Column field="source2Name" header="Source 2 Name" sortable filter filterPlaceholder="Search"
-                    body={(rowData) =>
-                        editableDropdownCell("source2Name", sources, rowData, "label", "code")
-                    } />
-                <Column field="source2Status" header="Source 2 Status" sortable filter filterPlaceholder="Search"
-                    body={(rowData) =>
-                        editableDropdownCell("source2Status", sourceStatuses, rowData, "label", "code")
-                    } />
-
-                <Column field="serialized" header="Serialized" sortable filter filterPlaceholder="Search" />
-                <Column field="conditionStatus" header="Condition Status" sortable filter filterPlaceholder="Search" />
-                <Column field="workflowStage" header="Workflow Stage" sortable filter filterPlaceholder="Search" />
-                <Column field="workspaceOneTrackingId" header="WS1 Tracking ID" sortable filter filterPlaceholder="Search" />
-                <Column field="currentResponsibleTeamId" header="Team ID" sortable filter filterPlaceholder="Search" />
-                <Column field="currentResponsibleUserId" header="User ID" sortable filter filterPlaceholder="Search" />
-
+                        editableDropdownCell(
+                            "subCatId",
+                            sCats.filter((subCat) => subCat.catId === (editingRow?.parItemId === rowData.parItemId ? editedItem?.catId : rowData.catId)),
+                            rowData,
+                            "subCatDesc",
+                            "subCatId"
+                        )
+                    }
+                />
+                <Column field="barcode" header="Barcode" sortable />
+                <Column field="totalCount" header="Total Count" sortable />
                 <Column
                     body={(rowData) => (
                         <>
-                            {permissionData?.userRoleId === 1 || permissionData?.userRoleId === 2 ? (
-                                editingRow && editingRow.parItemId === rowData.parItemId ? (
+                            {(permissionData?.userRoleId === 1 || permissionData?.userRoleId === 2) && (
+                                editingRow?.parItemId === rowData.parItemId ? (
                                     <>
                                         <Button icon="pi pi-check" onClick={onRowEditSave} className="p-button-success p-mr-2" />
                                         <Button icon="pi pi-times" onClick={onRowEditCancel} className="p-button-danger" />
@@ -239,7 +343,7 @@ function AllItemsList({ permissionData }) {
                                 ) : (
                                     <Button icon="pi pi-pencil" onClick={() => onRowEditInit(rowData)} />
                                 )
-                            ) : null}
+                            )}
                         </>
                     )}
                     style={{ width: "6rem" }}

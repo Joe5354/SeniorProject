@@ -115,26 +115,8 @@ namespace ReactApp1.Server.Controllers
 
                 if (item.Barcode != updatedItem.Barcode)
                     item.Barcode = updatedItem.Barcode;
-                /*
-                if (item.Source1Name != updatedItem.Source1Name)
-                    item.Source1Name = updatedItem.Source1Name;
-
-                if (item.Source1status != updatedItem.Source1status)
-                    item.Source1status = updatedItem.Source1status;
-
-                if (item.Source2Name != updatedItem.Source2Name)
-                    item.Source2Name = updatedItem.Source2Name;
-
-                if (item.Source2status != updatedItem.Source2status)
-                    item.Source2status = updatedItem.Source2status;
-
-                if (item.CatId != updatedItem.CatId)
-                    item.CatId = updatedItem.CatId;
-
-                if (item.SubCatId != updatedItem.SubCatId)
-                    item.SubCatId = updatedItem.SubCatId;
-                */
-               if (item.TotalCount != updatedItem.TotalIndividualUnits)
+                
+                if (item.TotalCount != updatedItem.TotalIndividualUnits)
                     item.TotalCount = updatedItem.TotalIndividualUnits;
 
                 if (item.ConditionStatus != updatedItem.ConditionStatusId.ToString())

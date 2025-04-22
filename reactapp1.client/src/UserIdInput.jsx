@@ -1,37 +1,42 @@
 import React, { useState } from "react";
-
+import './UserIDInput.css'; // Assume the styles are in a separate CSS file
+import jagSolo from './assets/JaguarSolo.png';
+import USAH from './assets/USAH.png';
 function UserIDInput({ setUserId }) {
-    // State to hold the value of the input
     const [idInputValue, setIdInputValue] = useState("");
 
-    // Function to handle the change in input field
     const handleIdInputChange = (event) => {
         setIdInputValue(event.target.value);
     };
 
-    // Function to handle form submission (when user inputs the ID)
     const handleIdSubmit = (event) => {
         event.preventDefault();
-        setUserId(idInputValue);  // Set the userId in the parent component
+        setUserId(idInputValue);
     };
 
     return (
-        <div>
-            <h1>Enter User ID</h1>
-            <form onSubmit={handleIdSubmit}>
-                <label>
-                    Your User Id:
+        <div className="container">
+            <div className="content">
+                <div className="logo">
+                    <img src={jagSolo} alt="PAR Dashboard Logo" className="logo-img" />
+                </div>
+                <div className="logo">
+                    <img src={USAH} alt="PAR Dashboard Logo" className="logo-img" />
+                </div>
+                <h1 className="title">PAR DASHBOARD</h1>
+                <form onSubmit={handleIdSubmit} className="input-form">
                     <input
                         type="text"
                         value={idInputValue}
                         onChange={handleIdInputChange}
-                        placeholder="Employee ID:"
+                        placeholder="Enter Employee ID"
+                        className="input-field"
                     />
-                </label>
-                <button type="submit">Submit</button>
-            </form>
+                    <button type="submit" className="submit-button">Submit</button>
+                </form>
+            </div>
         </div>
     );
 }
 
-export default UserIDInput;  // Make sure this is exported
+export default UserIDInput;

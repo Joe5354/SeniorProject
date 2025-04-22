@@ -9,6 +9,7 @@ import UserData from './UserData';
 import UserIDInput from './UserIdInput';
 import CreateNewUserForm from './CreateNewUserForm.jsx';
 import NotesTable from './ParNoteTable.jsx';
+import ParAlert from './ParAlert.jsx';
 
 // PrimeReact Components
 import { Menubar } from 'primereact/menubar';
@@ -43,14 +44,23 @@ function App() {
         if (userDetails) {
             console.log("User details updated:", userDetails);
         }
+        /*
+        List < VwItemInventory > invItems = await idealContext.VwItemInventories.ToListAsync();
+        foreach(var idealItem in invItems)
+        {
+            await Idealcontroller.PushItem(idealItem.ItemId, idealItem);
+        }*/
+
     }, [userDetails]);
 
     const menuItems = [
         { label: "Inventory", icon: "pi pi-box", command: () => setSelectedPage("items") },
         { label: "Rules", icon: "pi pi-cog", command: () => setSelectedPage("rules") },
-        { label: "Users", icon: "pi pi-users", command: () => setSelectedPage("users") },
+        ...(roleData?.editUser ? [{ label: "Users", icon: "pi pi-users", command: () => setSelectedPage("users") }] : []),
         { label: "Notes", icon: "pi pi-file-edit", command: () => setSelectedPage("notes") }
     ];
+
+
 
     return (
         <div className="ParDashboard">
@@ -65,15 +75,10 @@ function App() {
                 </>
             )}
 
-
-
-
-
-
-
             {/* Once logged in, show full dashboard */}
             {userDetails && roleData && (
                 <>
+                    {roleData.editRule === true && <ParAlert />}
                     <div style={{ marginBottom: "1rem" }}>
                         <h2>Welcome, {userDetails.firstName} {userDetails.lastName}</h2>
                         <p>Employee ID: {userDetails.employeeId}</p>
@@ -108,15 +113,14 @@ function App() {
                                     onClick={() => setShowCreateUserDialog(true)}
                                     style={{ marginTop: '1rem' }}
                                 />
-                                <Dialog
-                                    header="Create New User"
+                                <CreateNewUserForm
                                     visible={showCreateUserDialog}
-                                    style={{ width: '30vw' }}
                                     onHide={() => setShowCreateUserDialog(false)}
-                                    modal
-                                >
-                                    <CreateNewUserForm onClose={() => setShowCreateUserDialog(false)} />
-                                </Dialog>
+                                    onSuccess={(newUser) => {
+                                        console.log("New user created:", newUser);
+                                        // Refresh users list or show toast
+                                    }}
+                                />
                             </div>
                         )}
 

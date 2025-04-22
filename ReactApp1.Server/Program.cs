@@ -58,7 +58,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-/*// Populate Items table on startup
+// Populate Items table on startup
 using (var scope = app.Services.CreateScope())
 {
     var Idealcontroller = scope.ServiceProvider.GetRequiredService<IdealInventoryViewController>();
@@ -69,8 +69,9 @@ using (var scope = app.Services.CreateScope())
     { 
         await Idealcontroller.PushItem(idealItem.ItemId, idealItem);
     }
-}*/
+}
 
+app.UseRouting();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
@@ -91,6 +92,8 @@ app.MapUserRoleEndpoints();
 app.MapCategoryEndpoints();
 
 app.MapSubCategoryEndpoints();
+
+app.MapProductEndpoints();
 
 
 app.Run();
