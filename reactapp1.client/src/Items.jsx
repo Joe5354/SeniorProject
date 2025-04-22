@@ -12,11 +12,16 @@ function AllItemsList({ permissionData }) {
     const [products, setProducts] = useState([]);
     const [cats, setCats] = useState([]);
     const [sCats, setSCats] = useState([]);
-    const [selectedProducts, setSelectedProducts] = useState([]);
-    const [uniqueProductsOnly, setUniqueProductsOnly] = useState(false);
-    const [totalCountFilter, setTotalCountFilter] = useState(null);
     const [editingRow, setEditingRow] = useState(null);
     const [editedItem, setEditedItem] = useState(null);
+
+
+
+
+    const [selectedCountFilter, setSelectedCountFilter] = useState(null); // 'null', '!null', or null
+    const [selectedProducts, setSelectedProducts] = useState([]);
+    const [onlyUnique, setOnlyUnique] = useState(false);
+
 
     useEffect(() => {
         fetch("https://localhost:7245/api/item")
@@ -56,37 +61,30 @@ function AllItemsList({ permissionData }) {
     }, []);
 
     useEffect(() => {
-        applyFilters();
-    }, [items, selectedProducts, uniqueProductsOnly, totalCountFilter]);
+        let result = [...items];
 
-    const applyFilters = () => {
-        let filtered = [...items];
-
-        if (selectedProducts.length > 0) {
-            filtered = filtered.filter(item => selectedProducts.includes(item.productId));
+        if (selectedCountFilter === 'null') {
+            result = result.filter(i => i.totalCount === null);
+        } else if (selectedCountFilter === '!null') {
+            result = result.filter(i => i.totalCount !== null);
         }
 
-        if (uniqueProductsOnly) {
+        if (selectedProducts.length > 0) {
+            result = result.filter(i => selectedProducts.includes(i.productId));
+        }
+
+        if (onlyUnique) {
             const seen = new Set();
-            filtered = filtered.filter(item => {
-                if (seen.has(item.productId)) return false;
-                seen.add(item.productId);
+            result = result.filter(i => {
+                if (seen.has(i.productId)) return false;
+                seen.add(i.productId);
                 return true;
             });
         }
 
-        if (totalCountFilter !== null) {
-            filtered = filtered.filter(item =>
-                totalCountFilter ? item.totalCount !== null : item.totalCount === null
-            );
-        }
+        setFilteredItems(result);
+    }, [items, selectedCountFilter, selectedProducts, onlyUnique]);
 
-        setFilteredItems(filtered);
-    };
-
-    const productOptions = products.filter(p =>
-        items.some(i => i.productId === p.productId)
-    );
 
     const getProductName = (parItemId) => {
         const item = items.find(i => i.parItemId === parItemId);
@@ -192,107 +190,92 @@ function AllItemsList({ permissionData }) {
         return rowData[field]; // Display value if not in edit mode
     };
 
-    const ItemFilters = ({
-        selectedProducts, setSelectedProducts,
-        uniqueProductsOnly, setUniqueProductsOnly,
-        totalCountFilter, setTotalCountFilter,
-        clearAllFilters,
-        productOptions
-    }) => {
-        return (
-            <div className="flex flex-wrap items-center gap-4 mb-4">
-                {/* Product Filter */}
-                <div className="flex items-center gap-2">
-                    <MultiSelect
-                        value={selectedProducts}
-                        options={productOptions}
-                        optionLabel="name"
-                        optionValue="productId"
-                        onChange={(e) => {
-                            const value = e.value.length > 0 ? e.value : [];
-                            setSelectedProducts(value);
-                        }}
-                        placeholder="Filter by Product"
-                        display="chip"
-                        className="w-64"
-                    />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-outlined p-button-danger p-button-sm"
-                        onClick={() => setSelectedProducts([])}
-                        tooltip="Clear Product Filter"
-                    />
-                </div>
+    const intermediateFilteredItems = items.filter(item => {
+        const matchesCountFilter =
+            selectedCountFilter === 'null' ? item.totalCount === null :
+                selectedCountFilter === '!null' ? item.totalCount !== null :
+                    true;
 
-                {/* Unique Products Filter */}
-                <div className="flex items-center gap-2">
-                    <Dropdown
-                        value={uniqueProductsOnly}
-                        options={[
-                            { label: 'Only Show Unique Products', value: true },
-                            { label: '----', value: false }
-                        ]}
-                        onChange={(e) => setUniqueProductsOnly(e.value)}
-                        placeholder="Unique Products Only"
-                        className="w-48"
-                    />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-outlined p-button-danger p-button-sm"
-                        onClick={() => setUniqueProductsOnly(false)}
-                        tooltip="Clear Unique Filter"
-                    />
-                </div>
+        const matchesProductFilter =
+            selectedProducts.length === 0 || selectedProducts.includes(item.productId);
 
-                {/* Total Count Null/Not Null */}
-                <div className="flex items-center gap-2">
-                    <Dropdown
-                        value={totalCountFilter}
-                        options={[
-                            { label: 'Has Total Count (Not Serialized)', value: true },
-                            { label: 'No Total Count (Serialized)', value: false }
-                        ]}
-                        onChange={(e) => setTotalCountFilter(e.value)}
-                        placeholder="Total Count"
-                        className="w-48"
-                    />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-outlined p-button-danger p-button-sm"
-                        onClick={() => setTotalCountFilter(null)}
-                        tooltip="Clear Total Count Filter"
-                    />
-                </div>
+        return matchesCountFilter && matchesProductFilter;
+    });
 
-                {/* Clear All Filters */}
-                <Button
-                    label="Clear All"
-                    icon="pi pi-filter-slash"
-                    className="p-button-secondary p-button-sm"
-                    onClick={clearAllFilters}
-                />
-            </div>
-        );
-    };
+    // Get available totalCount options based on filtered items
+    const totalCountOptions = [];
+    if (intermediateFilteredItems.some(item => item.totalCount === null)) totalCountOptions.push('null');
+    if (intermediateFilteredItems.some(item => item.totalCount !== null)) totalCountOptions.push('!null');
+
+    // Get available product options based on filtered items
+    const productOptions = products
+        .filter(p => intermediateFilteredItems.some(i => i.productId === p.productId))
+        .map(p => ({ label: p.name, value: p.productId }));
+
+
 
     return (
         <div className="p-4">
             <h1>Item List</h1>
 
-            <ItemFilters
-                selectedProducts={selectedProducts}
-                setSelectedProducts={setSelectedProducts}
-                uniqueProductsOnly={uniqueProductsOnly}
-                setUniqueProductsOnly={setUniqueProductsOnly}
-                totalCountFilter={totalCountFilter}
-                setTotalCountFilter={setTotalCountFilter}
-                clearAllFilters={() => {
-                    setSelectedProducts([]);
-                    setUniqueProductsOnly(false);
-                    setTotalCountFilter(null);
-                }}
-                productOptions={productOptions}
-            />
+
+            <div className="p-mb-4 flex gap-4 items-end flex-wrap">
+                {/* TotalCount Filter */}
+                <div className="flex items-center gap-2">
+                    <Dropdown
+                        value={selectedCountFilter}
+                        options={totalCountOptions.map(opt => ({ label: opt === 'null' ? 'Null' : 'Not Null', value: opt }))}
+                        onChange={(e) => setSelectedCountFilter(e.value)}
+                        placeholder="Filter by Total Count"
+                        className="w-60"
+                    />
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-sm"
+                        onClick={() => setSelectedCountFilter(null)}
+                        tooltip="Clear Total Count filter"
+                    />
+                </div>
+
+                {/* Product Filter */}
+                <div className="flex items-center gap-2">
+                    <MultiSelect
+                        value={selectedProducts}
+                        options={productOptions}
+                        onChange={(e) => setSelectedProducts(e.value)}
+                        placeholder="Filter by Products"
+                        className="w-60"
+                        display="chip"
+                    />
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-sm"
+                        onClick={() => setSelectedProducts([])}
+                        tooltip="Clear Product filter"
+                    />
+                </div>
+
+                {/* Unique Checkbox */}
+                <div className="flex items-center gap-2">
+                    <input
+                        type="checkbox"
+                        checked={onlyUnique}
+                        onChange={(e) => setOnlyUnique(e.target.checked)}
+                    />
+                    <label>Only Unique Products</label>
+                    {onlyUnique && (
+                        <Button
+                            icon="pi pi-times"
+                            className="p-button-text p-button-sm"
+                            onClick={() => setOnlyUnique(false)}
+                            tooltip="Clear Unique filter"
+                        />
+                    )}
+                </div>
+            </div>
+
+
+
 
             <DataTable
                 value={filteredItems}
