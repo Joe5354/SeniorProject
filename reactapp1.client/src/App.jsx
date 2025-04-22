@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-
+import jagSolo from './assets/JaguarSolo.png';
+import USAH from './assets/USAH.png';
 // Custom Components
 import AllItemsList from './Items';
 import UsersList from './Users';
@@ -53,17 +54,28 @@ function App() {
 
     }, [userDetails]);
 
+    function Header() {
+        return (
+            <header className="app-header">
+                <img src={jagSolo} alt="Jaguar Logo" className="brand-logo" />
+                <h2 className="header-title">PAR DASHBOARD</h2>
+                <img src={USAH} alt="USA Health Header" className="header-image" />
+            </header>
+        );
+    }
+
+
     const menuItems = [
         { label: "Inventory", icon: "pi pi-box", command: () => setSelectedPage("items") },
         { label: "Rules", icon: "pi pi-cog", command: () => setSelectedPage("rules") },
         ...(roleData?.editUser ? [{ label: "Users", icon: "pi pi-users", command: () => setSelectedPage("users") }] : []),
-        { label: "Notes", icon: "pi pi-file-edit", command: () => setSelectedPage("notes") }
+        { label: "Notes", icon: "pi pi-file-edit", command: () => setSelectedPage("notes") },
+        { label: "Logout", icon: "pi pi-sign-out", command: () => handleLogout() }
     ];
 
-
-
+    
     return (
-        <div className="ParDashboard">
+        <div className="app-wrapper">
 
             {/* Show login form until user logs in */}
             {!userDetails && (
@@ -79,18 +91,16 @@ function App() {
             {userDetails && roleData && (
                 <>
                     {roleData.editRule === true && <ParAlert />}
-                    <div style={{ marginBottom: "1rem" }}>
-                        <h2>Welcome, {userDetails.firstName} {userDetails.lastName}</h2>
-                        <p>Employee ID: {userDetails.employeeId}</p>
-                        <Button label="Logout" icon="pi pi-sign-out" onClick={handleLogout} className="p-button-danger" />
-                    </div>
-
-
-                    <Menubar model={menuItems} />
+                    <Header />
+                    <Menubar
+                        model={menuItems}
+                        className="app-menubar stylish-menubar"
+                        style={{ padding: '0 2rem' }}
+                    />
 
 
 
-                    <div style={{ marginTop: "2rem" }}>
+                    <div style={{ marginTop: "2rem" }} className="card">
                         {/*Items*/ }
                         {selectedPage === "items" && <AllItemsList permissionData={roleData} />}
 
@@ -105,7 +115,7 @@ function App() {
 
                         {/*Users*/}
                         {selectedPage === "users" && (
-                            <div>
+                            <div >
                                 <UsersList />
                                 <Button
                                     label="Create New User"

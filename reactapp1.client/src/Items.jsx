@@ -303,6 +303,7 @@ function AllItemsList({ permissionData }) {
                 dataKey="parItemId"
                 scrollable
                 scrollHeight="400px"
+                stripedRows
             >
                 <Column field="productId" header="Product Name" sortable body={(rowData) => getProductName(rowData.parItemId)} syle={{width:'250px'}} />
                 <Column field="catId"
