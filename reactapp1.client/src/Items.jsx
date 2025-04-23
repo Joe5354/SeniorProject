@@ -15,7 +15,8 @@ function AllItemsList({ permissionData }) {
     const [editingRow, setEditingRow] = useState(null);
     const [editedItem, setEditedItem] = useState(null);
 
-
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [selectedSubCategories, setSelectedSubCategories] = useState([]);
 
 
     const [selectedCountFilter, setSelectedCountFilter] = useState(null); // 'null', '!null', or null
@@ -73,6 +74,14 @@ function AllItemsList({ permissionData }) {
             result = result.filter(i => selectedProducts.includes(i.productId));
         }
 
+        if (selectedCategories.length > 0) {
+            result = result.filter(i => selectedCategories.includes(i.catId));
+        }
+
+        if (selectedSubCategories.length > 0) {
+            result = result.filter(i => selectedSubCategories.includes(i.subCatId));
+        }
+
         if (onlyUnique) {
             const seen = new Set();
             result = result.filter(i => {
@@ -83,8 +92,9 @@ function AllItemsList({ permissionData }) {
         }
 
         setFilteredItems(result);
-    }, [items, selectedCountFilter, selectedProducts, onlyUnique]);
+    }, [items, selectedCountFilter, selectedProducts, selectedCategories, selectedSubCategories, onlyUnique]);
 
+    
 
     const getProductName = (parItemId) => {
         const item = items.find(i => i.parItemId === parItemId);
@@ -207,19 +217,132 @@ function AllItemsList({ permissionData }) {
     if (intermediateFilteredItems.some(item => item.totalCount === null)) totalCountOptions.push('null');
     if (intermediateFilteredItems.some(item => item.totalCount !== null)) totalCountOptions.push('!null');
 
-    // Get available product options based on filtered items
+    useEffect(() => {
+        let result = [...items];
+
+        if (selectedCountFilter === 'null') {
+            result = result.filter(i => i.totalCount === null);
+        } else if (selectedCountFilter === '!null') {
+            result = result.filter(i => i.totalCount !== null);
+        }
+
+        if (selectedProducts.length > 0) {
+            result = result.filter(i => selectedProducts.includes(i.productId));
+        }
+
+        if (selectedCategories.length > 0) {
+            result = result.filter(i => selectedCategories.includes(i.catId));
+        }
+
+        if (selectedSubCategories.length > 0) {
+            result = result.filter(i => selectedSubCategories.includes(i.subCatId));
+        }
+
+        if (onlyUnique) {
+            const seen = new Set();
+            result = result.filter(i => {
+                if (seen.has(i.productId)) return false;
+                seen.add(i.productId);
+                return true;
+            });
+        }
+
+        setFilteredItems(result);
+    }, [items, selectedCountFilter, selectedProducts, selectedCategories, selectedSubCategories, onlyUnique]);
+    const dynamicFilteredItems = items.filter(item => {
+    const countMatch =
+        selectedCountFilter === 'null' ? item.totalCount === null :
+        selectedCountFilter === '!null' ? item.totalCount !== null :
+        true;
+
+    const productMatch = selectedProducts.length === 0 || selectedProducts.includes(item.productId);
+    const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(item.catId);
+    const subCategoryMatch = selectedSubCategories.length === 0 || selectedSubCategories.includes(item.subCatId);
+
+    return countMatch && productMatch && categoryMatch && subCategoryMatch;
+});
     const productOptions = products
-        .filter(p => intermediateFilteredItems.some(i => i.productId === p.productId))
+        .filter(p => {
+            const associatedItem = items.find(item => item.productId === p.productId); // Match product to item
+
+            if (!associatedItem) return false; // Exclude products with no matching item
+
+            const catId = associatedItem.catId; // Get category from associated item
+
+            return (
+                (selectedCategories.length === 0 || selectedCategories.includes(catId)) &&
+                (selectedSubCategories.length === 0 || selectedSubCategories.includes(p.subCatId))
+            );
+        })
         .map(p => ({ label: p.name, value: p.productId }));
 
+    const categoryOptions = cats
+    .filter(c => 
+        // Only include categories that match the selected subcategories' catId
+        (selectedSubCategories.length === 0 || selectedSubCategories.some(scId => {
+            const subCat = sCats.find(sc => sc.subCatId === scId); // Find subcategory by ID
+            return subCat && subCat.catId === c.catId; // Check if subcategory's catId matches category's catId
+        })) &&
+        // Only include categories that match the selected products' catId
+        (selectedProducts.length === 0 || selectedProducts.some(p => {
+            const associatedItem = items.find(i => i.productId === p); // Find the item for the product
+            return associatedItem && associatedItem.catId === c.catId; // Check if product's associated catId matches category's catId
+        }))
+    )
+    .map(c => ({ label: c.catDesc, value: c.catId }));
 
-
+    const subCategoryOptions = sCats
+        .filter(sc =>
+            // Filter by selected products' associated item's catId
+            (selectedProducts.length === 0 || selectedProducts.some(p => {
+                const associatedItem = items.find(i => i.productId === p); // Find the item for the product
+                return associatedItem && associatedItem.subCatId === sc.subCatId; // Check if the product's item catId matches the subcategory's catId
+            })) &&
+            // Filter by selected categories' catId
+            (selectedCategories.length === 0 || selectedCategories.includes(sc.catId))
+        )
+        .map(sc => ({ label: sc.subCatDesc, value: sc.subCatId }));
     return (
         <div className="p-4">
             <h1>Item List</h1>
 
 
             <div className="p-mb-4 flex gap-4 items-end flex-wrap">
+                {/* Category Filter */}
+                <div className="flex items-center gap-2">
+                    <MultiSelect
+                        value={selectedCategories}
+                        options={categoryOptions}
+                        onChange={(e) => setSelectedCategories(e.value)}
+                        placeholder="Filter by Categories"
+                        className="w-60"
+                        display="chip"
+                    />
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-sm"
+                        onClick={() => setSelectedCategories([])}
+                        tooltip="Clear Category filter"
+                    />
+                </div>
+
+                {/* Subcategory Filter */}
+                <div className="flex items-center gap-2">
+                    <MultiSelect
+                        value={selectedSubCategories}
+                        options={subCategoryOptions}
+                        onChange={(e) => setSelectedSubCategories(e.value)}
+                        placeholder="Filter by Subcategories"
+                        className="w-60"
+                        display="chip"
+                    />
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-sm"
+                        onClick={() => setSelectedSubCategories([])}
+                        tooltip="Clear Subcategory filter"
+                    />
+                </div>
                 {/* TotalCount Filter */}
                 <div className="flex items-center gap-2">
                     <Dropdown
@@ -288,7 +411,7 @@ function AllItemsList({ permissionData }) {
                 scrollHeight="400px"
                 stripedRows
             >
-                <Column field="productId" header="Product Name" sortable body={(rowData) => getProductName(rowData.parItemId)} syle={{width:'250px'}} />
+                <Column field="productId" header="Product Name" sortable body={(rowData) => getProductName(rowData.parItemId)} style={{ width: '250px' }} />
                 <Column field="catId"
                     header="Category"
                     sortable
