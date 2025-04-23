@@ -542,12 +542,14 @@ function RulesList({ userData, createRule, editRule }) {
                 />
             </DataTable>
 
-            <CreateParRule
-                visible={showCreateDialog}
-                onHide={() => setShowCreateDialog(false)}
-                onSuccess={handleRuleCreated}
-                userData={userData}
-            />
+            {createRule && (
+                <CreateParRule
+                    visible={showCreateDialog}
+                    onHide={() => setShowCreateDialog(false)}
+                    onSuccess={handleRuleCreated}
+                    userData={userData}
+                />
+            )}
         </div>
     );
 }

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { InputText } from "primereact/inputtext";
+import { Checkbox } from 'primereact/checkbox';
 import { Button } from "primereact/button";
 import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
 
 function AllItemsList({ permissionData }) {
     const [items, setItems] = useState([]);
+    const [rules, setRules] = useState([]);
     const [filteredItems, setFilteredItems] = useState([]);
     const [products, setProducts] = useState([]);
     const [cats, setCats] = useState([]);
@@ -18,7 +19,7 @@ function AllItemsList({ permissionData }) {
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [selectedSubCategories, setSelectedSubCategories] = useState([]);
 
-
+    const [onlyParAlerts, setOnlyParAlerts] = useState(false);
     const [selectedCountFilter, setSelectedCountFilter] = useState(null); // 'null', '!null', or null
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [onlyUnique, setOnlyUnique] = useState(false);
@@ -59,6 +60,13 @@ function AllItemsList({ permissionData }) {
             })
             .then((data) => setSCats(data))
             .catch((error) => console.error("Error fetching subCategories:", error));
+        fetch("https://localhost:7245/api/parRule")
+            .then((response) => {
+                if (!response.ok) throw new Error("Failed to fetch subCategories");
+                return response.json();
+            })
+            .then((data) => setRules(data))
+            .catch((error) => console.error("Error fetching subCategories:", error));
     }, []);
 
     useEffect(() => {
@@ -91,8 +99,18 @@ function AllItemsList({ permissionData }) {
             });
         }
 
+
+        if (onlyParAlerts) {
+            result = result.filter(item => {
+                const matchingRule = rules.find(
+                    rule => rule.parItemId === item.parItemId && rule.isActive === true
+                );
+                return matchingRule && item.totalCount <= matchingRule.parValue;
+            });
+        }
+
         setFilteredItems(result);
-    }, [items, selectedCountFilter, selectedProducts, selectedCategories, selectedSubCategories, onlyUnique]);
+    }, [items, selectedCountFilter, selectedProducts, selectedCategories, selectedSubCategories, onlyUnique, onlyParAlerts]);
 
     
 
@@ -318,6 +336,15 @@ function AllItemsList({ permissionData }) {
 
 
             <div className="p-mb-4 flex gap-4 items-end flex-wrap">
+                {/* Only Par Alerts */}
+                <div className="flex items-center gap-2">
+                    <Checkbox
+                        inputId="onlyParAlerts"
+                        checked={onlyParAlerts}
+                        onChange={(e) => setOnlyParAlerts(e.checked)}
+                    />
+                    <label htmlFor="onlyParAlerts">Only Par Alerts</label>
+                </div>
                 {/* Category Filter */}
                 <div className="flex items-center gap-2">
                     <MultiSelect

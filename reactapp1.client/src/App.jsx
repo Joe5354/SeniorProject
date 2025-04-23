@@ -90,7 +90,7 @@ function App() {
             {/* Once logged in, show full dashboard */}
             {userDetails && roleData && (
                 <>
-                    {roleData.editRule === true && <ParAlert />}
+                    {roleData.seeAlerts === true && <ParAlert />}
                     <Header />
                     <Menubar
                         model={menuItems}
