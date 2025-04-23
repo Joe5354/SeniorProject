@@ -6,18 +6,20 @@ import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
-import CreateParRule from "./CreateParRule";
+import CreateNewUserForm from "./CreateNewUserForm";
 import { Checkbox } from 'primereact/checkbox';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
+
+import { FloatLabel } from 'primereact/floatlabel';
+
 function UsersList({editUser, createUser }) { //make a .jsx file in /src labeled Items
     const [users, setUsers] = useState([]); //<-- create/set table to be displayed on the web page
     const [roles, setRoles] = useState([]);
-    //editing row stuff
+    const [showCreateUserDialog, setShowCreateUserDialog] = useState(false); // Dialog state
     const [editingRowId, setEditingRowId] = useState(null);  // Track the userId of the row being edited
     const [editedUser, setEditedUser] = useState(null);  // Store edited user
-    const [editingRow, setEditingRow] = useState(null);  // Store edited user
     const toast = useRef(null);
 
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -306,13 +308,21 @@ function UsersList({editUser, createUser }) { //make a .jsx file in /src labeled
 
     return (//this is a javascript/ primereact datatable where we pass our fetched .json table "items". From here, refer to Primereact datatable documentation.
         <div className="p-4">
-            <h1>User List</h1>
-            <div className="p-5">
-                <h3>Filter Users</h3>
-                <div className="p-grid p-align-center">
-                    {/* Username Filter */}
-                    <div className="p-col-12 p-md-3">
-                        <div className="p-d-flex p-ai-center">
+            
+            <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: '1.5rem',
+                padding: '1.5rem',
+                marginBottom: '1.5rem',
+                backgroundColor: '#fff',
+                borderRadius: '1rem',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            }}>
+                <h1>User List</h1>
+                {/* Username Filter */}
+                <FloatLabel className="w-full md:w-30rem">
                             <MultiSelect
                                 value={selectedUsernames}
                                 options={usernameOptions}
@@ -320,19 +330,17 @@ function UsersList({editUser, createUser }) { //make a .jsx file in /src labeled
                                 placeholder="Select Usernames"
                                 display="chip"
                                 className="p-mb-3"
-                            />
+                    />
+                    <label htmlFor="ms-items">Select Usernames</label>
                             <Button
                                 icon="pi pi-times"
                                 className="p-button-text p-button-sm p-ml-2"
                                 onClick={() => setSelectedUsernames([])}
                                 tooltip="Clear Usernames"
                             />
-                        </div>
-                    </div>
-
-                    {/* Employee ID Filter */}
-                    <div className="p-col-12 p-md-3">
-                        <div className="p-d-flex p-ai-center">
+                </FloatLabel>
+                {/* Employee ID Filter */}
+                <FloatLabel className="w-full md:w-30rem">
                             <MultiSelect
                                 value={selectedEmpIds}
                                 options={empIdOptions}
@@ -340,19 +348,17 @@ function UsersList({editUser, createUser }) { //make a .jsx file in /src labeled
                                 placeholder="Select Employee IDs"
                                 display="chip"
                                 className="p-mb-3"
-                            />
+                    />
+                    <label htmlFor="ms-items">Select Employee Ids</label>
                             <Button
                                 icon="pi pi-times"
                                 className="p-button-text p-button-sm p-ml-2"
                                 onClick={() => setSelectedEmpIds([])}
                                 tooltip="Clear Employee IDs"
                             />
-                        </div>
-                    </div>
-
-                    {/* Role Filter */}
-                    <div className="p-col-12 p-md-3">
-                        <div className="p-d-flex p-ai-center">
+                </FloatLabel>
+                {/* Role Filter */}
+                <FloatLabel className="w-full md:w-30rem">
                             <MultiSelect
                                 value={selectedRoles}
                                 options={roleOptions}
@@ -360,19 +366,16 @@ function UsersList({editUser, createUser }) { //make a .jsx file in /src labeled
                                 placeholder="Select Roles"
                                 display="chip"
                                 className="p-mb-3"
-                            />
+                    />
+                    <label htmlFor="ms-items">Select Roles</label>
                             <Button
                                 icon="pi pi-times"
                                 className="p-button-text p-button-sm p-ml-2"
                                 onClick={() => setSelectedRoles([])}
                                 tooltip="Clear Roles"
                             />
-                        </div>
-                    </div>
-
+                </FloatLabel>
                     {/* Active Status Filter */}
-                    <div className="p-col-12 p-md-3">
-                        <div className="p-d-flex p-ai-center">
                             <label htmlFor="activeOnly">Only Active Users</label>
                             <Checkbox
                                 inputId="onlyActive"
@@ -387,9 +390,6 @@ function UsersList({editUser, createUser }) { //make a .jsx file in /src labeled
                                 onClick={() => setOnlyActive(false)}
                                 tooltip="Clear Active Status Filter"
                             />
-                        </div>
-                    </div>
-                </div>
 
                 {/* Clear All Filters Button */}
                 <Button
@@ -397,6 +397,20 @@ function UsersList({editUser, createUser }) { //make a .jsx file in /src labeled
                     icon="pi pi-filter-slash"
                     className="p-button-secondary p-button-sm"
                     onClick={clearAllFilters}
+                />
+                <Button
+                    label="Create New User"
+                    icon="pi pi-user-plus"
+                    onClick={() => setShowCreateUserDialog(true)}
+                    style={{ marginTop: '1rem' }}
+                />
+                <CreateNewUserForm
+                    visible={showCreateUserDialog}
+                    onHide={() => setShowCreateUserDialog(false)}
+                    onSuccess={(newUser) => {
+                        console.log("New user created:", newUser);
+                        // Refresh users list or show toast
+                    }}
                 />
             </div>
 

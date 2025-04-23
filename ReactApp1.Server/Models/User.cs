@@ -79,12 +79,31 @@ public static class UserEndpoints
 
         group.MapPost("/", async (User user, parDbContext db) =>
         {
+            // Check for existing username
+            if (await db.Users.AnyAsync(u => u.Username == user.Username))
+            {
+                return Results.BadRequest("Username already exists.");
+            }
+
+            // Check for existing email
+            if (await db.Users.AnyAsync(u => u.Email == user.Email))
+            {
+                return Results.BadRequest("Email already exists.");
+            }
+
+            // Check for existing employee ID
+            if (await db.Users.AnyAsync(u => u.EmployeeId == user.EmployeeId))
+            {
+                return Results.BadRequest("Employee ID already exists.");
+            }
+
             db.Users.Add(user);
             await db.SaveChangesAsync();
-            return TypedResults.Created($"/api/User/{user.UserId}",user);
+
+            return TypedResults.Created($"/api/User/{user.UserId}", user);
         })
-        .WithName("CreateUser")
-        .WithOpenApi();
+.WithName("CreateUser")
+.WithOpenApi();
 
         group.MapDelete("/{UserId}", async Task<Results<Ok, NotFound>> (int userid, parDbContext db) =>
         {

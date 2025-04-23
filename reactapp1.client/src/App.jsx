@@ -26,7 +26,6 @@ import "primeicons/primeicons.css";
 function App() {
     const [userId, setUserId] = useState(null); // User ID input
     const [selectedPage, setSelectedPage] = useState("items"); // Page selection
-    const [showCreateUserDialog, setShowCreateUserDialog] = useState(false); // Dialog state
     const [roleData, setRoleData] = useState(null); // Permissions
     const [userDetails, setUserDetails] = useState(null); // User info
 
@@ -73,6 +72,7 @@ function App() {
         ...(roleData?.editUser ? [{ label: "Users", icon: "pi pi-users", command: () => setSelectedPage("users") }] : []),
         { label: "Notes", icon: "pi pi-file-edit", command: () => setSelectedPage("notes") },
         { label: "Logout", icon: "pi pi-sign-out", command: () => handleLogout() }
+        { label: "Reports", icon: "pi pi-file", command: () => setSelectedPage("reports") }
     ];
 
     
@@ -119,20 +119,7 @@ function App() {
                         {selectedPage === "users" && (
                             <div >
                                 <UsersList editUser={roleData.editUser} createUser={ roleData.createUser} />
-                                <Button
-                                    label="Create New User"
-                                    icon="pi pi-user-plus"
-                                    onClick={() => setShowCreateUserDialog(true)}
-                                    style={{ marginTop: '1rem' }}
-                                />
-                                <CreateNewUserForm
-                                    visible={showCreateUserDialog}
-                                    onHide={() => setShowCreateUserDialog(false)}
-                                    onSuccess={(newUser) => {
-                                        console.log("New user created:", newUser);
-                                        // Refresh users list or show toast
-                                    }}
-                                />
+                                
                             </div>
                         )}
 
@@ -140,6 +127,7 @@ function App() {
                         {selectedPage === "notes" && (
                             <NotesTable userId={userId} />
                         )}
+                        {selectedPage === "reports" && <AllItemsList permissionData={roleData} />}
                     </div>
                 </>
             )}

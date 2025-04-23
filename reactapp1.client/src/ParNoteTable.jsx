@@ -294,7 +294,7 @@ function NotesTable({ userId }) {
 
     return (
         <div className="p-4">
-            <h1>Note List</h1>
+            
             <div className="inline-flex items-center gap-2">
                 <div style={{
                     display: 'flex',
@@ -307,6 +307,7 @@ function NotesTable({ userId }) {
                     borderRadius: '1rem',
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
                 }}>
+                    <h1>Note List</h1>
                  <FloatLabel className="w-full md:w-30rem">
                     <MultiSelect
                         value={selectedItems}

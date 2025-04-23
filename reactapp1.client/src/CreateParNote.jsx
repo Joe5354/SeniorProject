@@ -139,6 +139,7 @@ function CreateParNote({ visible, onHide, onSuccess, userId }) {
     return (
         <>
             <Toast ref={toastRef} />
+
             <Dialog
                 header="Create New PAR Note"
                 visible={visible}

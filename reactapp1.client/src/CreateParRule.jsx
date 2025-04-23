@@ -250,7 +250,7 @@ function CreateParRule({ visible, onHide, onSuccess, userData }) {
                         )}
 
                         <div className="p-field mb-3">
-                            <label htmlFor="ruleName" className="font-bold">Rule Name*</label>
+                                <label htmlFor="ruleName" className="font-bold label-top-space">Rule Name*</label>
                             <InputText
                                 id="ruleName"
                                 value={ruleName}

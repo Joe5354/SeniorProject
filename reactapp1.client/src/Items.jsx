@@ -6,6 +6,8 @@ import { Button } from "primereact/button";
 import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
 
+import { FloatLabel } from 'primereact/floatlabel';
+
 function AllItemsList({ permissionData }) {
     const [items, setItems] = useState([]);
     const [rules, setRules] = useState([]);
@@ -333,13 +335,20 @@ function AllItemsList({ permissionData }) {
     };
     return (
         <div className="parent-container">
-            <div className="other-content">
-            <h1>Item List</h1>
-            </div>
 
-            <div className="p-mb-4 flex gap-4 items-end flex-wrap">
+                <div style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    gap: '1.5rem',
+                    padding: '1.5rem',
+                    marginBottom: '1.5rem',
+                    backgroundColor: '#fff',
+                    borderRadius: '1rem',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            }}>
+                <h1>Item List</h1>
                 {/* Only Par Alerts */}
-                <div className="flex items-center gap-2">
                     <Checkbox
                         inputId="onlyParAlerts"
                         checked={onlyParAlerts}
@@ -354,9 +363,8 @@ function AllItemsList({ permissionData }) {
                             tooltip="Clear Par Alerts filter"
                         />
                     )}
-                </div>
                 {/* Category Filter */}
-                <div className="flex items-center gap-2">
+                <FloatLabel className="w-full md:w-30rem">
                     <MultiSelect
                         value={selectedCategories}
                         options={categoryOptions}
@@ -365,6 +373,7 @@ function AllItemsList({ permissionData }) {
                         className="w-60"
                         display="chip"
                     />
+                    <label htmlFor="ms-items">Select Categories</label>
                     {selectedCategories.length > 0 && (
                         <Button
                             icon="pi pi-times"
@@ -372,10 +381,9 @@ function AllItemsList({ permissionData }) {
                             onClick={() => setSelectedCategories([])}
                             tooltip="Clear Category filter"
                         />)}
-                </div>
-
+                </FloatLabel>
                 {/* Subcategory Filter */}
-                <div className="flex items-center gap-2">
+                <FloatLabel className="w-full md:w-30rem">
                     <MultiSelect
                         value={selectedSubCategories}
                         options={subCategoryOptions}
@@ -383,7 +391,8 @@ function AllItemsList({ permissionData }) {
                         placeholder="Filter by Subcategories"
                         className="w-60"
                         display="chip"
-                    />
+                />
+                <label htmlFor="ms-items">Select Subcategories</label>
                     {selectedSubCategories.length > 0 && (
                         <Button
                             icon="pi pi-times"
@@ -391,16 +400,15 @@ function AllItemsList({ permissionData }) {
                             onClick={() => setSelectedSubCategories([])}
                             tooltip="Clear Subcategory filter"
                         />)}
-                </div>
-                {/* TotalCount Filter */}
-                <div className="flex items-center gap-2">
+                </FloatLabel>
+                    {/* TotalCount Filter */}
                     <Dropdown
                         value={selectedCountFilter}
                         options={totalCountOptions.map(opt => ({ label: opt === 'null' ? 'Null' : 'Not Null', value: opt }))}
                         onChange={(e) => setSelectedCountFilter(e.value)}
                         placeholder="Filter by Total Count"
                         className="w-60"
-                    />
+                />
                     {selectedCountFilter && (
                         <Button
                             icon="pi pi-times"
@@ -408,10 +416,8 @@ function AllItemsList({ permissionData }) {
                             onClick={() => setSelectedCountFilter(null)}
                             tooltip="Clear Total Count filter"
                         />)}
-                </div>
-
-                {/* Product Filter */}
-                <div className="flex items-center gap-2">
+                        {/* Product Filter */}
+                        <FloatLabel className="w-full md:w-30rem">
                     <MultiSelect
                         value={selectedProducts}
                         options={productOptions}
@@ -419,7 +425,8 @@ function AllItemsList({ permissionData }) {
                         placeholder="Filter by Products"
                         className="w-60"
                         display="chip"
-                    />
+                />
+                <label htmlFor="ms-items">Select Products</label>
                     {selectedProducts.length > 0 && (
                         <Button
                             icon="pi pi-times"
@@ -428,10 +435,8 @@ function AllItemsList({ permissionData }) {
                             tooltip="Clear Product filter"
                         />
                     )}
-                </div>
-
+                </FloatLabel>
                 {/* Unique Checkbox */}
-                <div className="flex items-center gap-2">
                     <Checkbox
                         inputId="onlyParAlerts"
                         checked={onlyUnique}
@@ -446,7 +451,7 @@ function AllItemsList({ permissionData }) {
                             tooltip="Clear Unique filter"
                         />
                     )}
-                </div>
+
                 {/* Clear All Filters Button */}
                 <Button
                     label="Clear All"
@@ -455,7 +460,6 @@ function AllItemsList({ permissionData }) {
                     onClick={clearAllFilters}
                 />
             </div>
-
 
 
             <div className="datatable-container">

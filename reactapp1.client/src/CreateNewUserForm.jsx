@@ -58,6 +58,27 @@ function CreateNewUserForm({ visible, onHide, onSuccess }) {
     };
 
     const handleSubmit = async () => {
+        // Frontend validation
+        const { username, firstName, lastName, email, employeeId, userRoleId } = formData;
+
+        if (!username || !firstName || !lastName || !email || !employeeId || !userRoleId) {
+            toastRef.current.show({
+                severity: "error",
+                summary: "Validation Error",
+                detail: "All fields are required.",
+            });
+            return;
+        }
+
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            toastRef.current.show({
+                severity: "error",
+                summary: "Validation Error",
+                detail: "Please enter a valid email address.",
+            });
+            return;
+        }
+
         try {
             const response = await fetch('https://localhost:7245/api/user', {
                 method: 'POST',
@@ -66,7 +87,16 @@ function CreateNewUserForm({ visible, onHide, onSuccess }) {
             });
 
             if (!response.ok) {
-                const text = await response.text();
+                const text = await response.text().then(t => t.toLowerCase());
+
+                if (text.includes("email")) {
+                    throw new Error("Email already in database.");
+                } else if (text.includes("username")) {
+                    throw new Error("Username already in use.");
+                } else if (text.includes("employeeId") || text.includes("employee id")) {
+                    throw new Error("Employee ID already exists.");
+                }
+
                 throw new Error(`Failed to create user: ${text}`);
             }
 

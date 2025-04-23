@@ -11,6 +11,7 @@ import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
+import { FloatLabel } from 'primereact/floatlabel';
 function RulesList({ userData, createRule, editRule }) {
     //tabular data
     const [rules, setRules] = useState([]);
@@ -410,8 +411,71 @@ function RulesList({ userData, createRule, editRule }) {
     return (
         <div className="p-6">
             <Toast ref={toast} />
-            <div className="flex justify-content-between align-items-center mb-3">
+            <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: '1.5rem',
+                padding: '1.5rem',
+                marginBottom: '1.5rem',
+                backgroundColor: '#fff',
+                borderRadius: '1rem',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            }}>
                 <h1>PAR Rules Management</h1>
+                
+                {/* Item Filter */}
+                <FloatLabel className="w-full md:w-30rem">
+                    <MultiSelect
+                        value={selectedItems}
+                        onChange={(e) => setSelectedItems(e.value)}
+                        options={items.length && products.length ? itemOptions : []}  // Only render options when data is available
+                        placeholder="Select Item"
+                        display="chip"
+                    />
+                    <label htmlFor="ms-items">Select Items</label>
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-sm p-ml-2"
+                        onClick={() => setSelectedItems([])}
+                        tooltip="Clear Selected Items"
+                    />
+                </FloatLabel>
+                {/* Active Checkbox */}
+                    <Checkbox inputId="activeOnly" checked={showOnlyActive} onChange={(e) => setShowOnlyActive(e.checked)} />
+                    <label htmlFor="activeOnly">Only Active Rules</label>
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-sm p-ml-2"
+                        onClick={() => setShowOnlyActive(false)}
+                        tooltip="Clear Show Only Active"
+                    />
+
+                {/* Created By Filter */}
+                <FloatLabel className="w-full md:w-30rem">
+                    <MultiSelect
+                        value={selectedUsers}
+                        options={ruleMakers}  // Use the ruleMakers here
+                        onChange={(e) => setSelectedUsers(e.value)}
+                        placeholder="Filter by Created By"
+                        className="w-60"
+                        display="chip"
+                    />
+                    <label htmlFor="ms-items">Select Users</label>
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-sm p-ml-2"
+                        onClick={() => setSelectedUsers([])}
+                        tooltip="Clear Selected users"
+                    />
+                </FloatLabel>
+                {/* Clear All Filters Button */}
+                <Button
+                    label="Clear All"
+                    icon="pi pi-filter-slash"
+                    className="p-button-secondary p-button-sm"
+                    onClick={clearAllFilters}
+                />
                 {userData?.userId && createRule && (
                     <Button
                         label={createRule ? "Create Rule" : "No Permission"}
@@ -426,63 +490,6 @@ function RulesList({ userData, createRule, editRule }) {
                                     : "Create a new PAR rule"
                         }
                     />)}
-            </div>
-
-            <div className="p-mb-4 flex gap-4 items-end flex-wrap">
-                {/* Item Filter */}
-                <div className="flex items-center gap-2">
-                    <MultiSelect
-                        value={selectedItems}
-                        onChange={(e) => setSelectedItems(e.value)}
-                        options={items.length && products.length ? itemOptions : []}  // Only render options when data is available
-                        placeholder="Select Item"
-                        display="chip"
-                    />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-text p-button-sm p-ml-2"
-                        onClick={() => setSelectedItems([])}
-                        tooltip="Clear Selected Items"
-                    />
-                </div>
-
-                {/* Active Checkbox */}
-                <div className="flex items-center gap-2">
-                    <Checkbox inputId="activeOnly" checked={showOnlyActive} onChange={(e) => setShowOnlyActive(e.checked)} />
-                    <label htmlFor="activeOnly">Only Active Rules</label>
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-text p-button-sm p-ml-2"
-                        onClick={() => setShowOnlyActive(false)}
-                        tooltip="Clear Show Only Active"
-                    />
-                </div>
-
-                {/* Created By Filter */}
-                <div className="flex items-center gap-2">
-                    <MultiSelect
-                        value={selectedUsers}
-                        options={ruleMakers}  // Use the ruleMakers here
-                        onChange={(e) => setSelectedUsers(e.value)}
-                        placeholder="Filter by Created By"
-                        className="w-60"
-                        display="chip"
-                    />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-text p-button-sm p-ml-2"
-                        onClick={() => setSelectedUsers([])}
-                        tooltip="Clear Selected users"
-                    />
-                </div>
-
-                {/* Clear All Filters Button */}
-                <Button
-                    label="Clear All"
-                    icon="pi pi-filter-slash"
-                    className="p-button-secondary p-button-sm"
-                    onClick={clearAllFilters}
-                />
             </div>
             <div className = "datatable-container">
             <DataTable

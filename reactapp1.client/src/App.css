@@ -534,3 +534,35 @@ input:focus,
         font-size: 0.75rem; /* Adjust font size when label floats */
         color: #495057; /* Change label color on focus */
     }
+.p-dialog .p-dialog-header .p-dialog-title {
+    padding-left: 1rem; /* or whatever value looks good */
+}
+
+.p-dialog .p-dialog-content {
+    padding: 1.5rem;
+}
+.p-inputnumber-button {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+}
+
+    .p-inputnumber-button .pi {
+        font-size: 1rem; /* Optional: adjust icon size if needed */
+    }
+
+.p-field label {
+    margin-top: 0.5rem; 
+}
+
+.p-field {
+    margin-bottom: 0.5rem; 
+
+}
+    .p-field .p-inputtext, .p-field .p-dropdown, .p-field .p-textarea {
+        margin-top: 0; 
+    }
+    .p-field .p-inputnumber {
+        margin-top: 0; 
+    }
+
