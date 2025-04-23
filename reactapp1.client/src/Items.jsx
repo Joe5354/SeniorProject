@@ -272,6 +272,7 @@ function AllItemsList({ permissionData }) {
 
         setFilteredItems(result);
     }, [items, selectedCountFilter, selectedProducts, selectedCategories, selectedSubCategories, onlyUnique]);
+
     const dynamicFilteredItems = items.filter(item => {
     const countMatch =
         selectedCountFilter === 'null' ? item.totalCount === null :

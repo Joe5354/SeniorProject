@@ -18,15 +18,11 @@ function RulesList({ userData, createRule, editRule }) {
     const [items, setItems] = useState([]);
     const [products, setProducts] = useState([]);
 
-    // filtering stuff
-    const [filters, setFilters] = useState({
-        isActive: null, // null = no filter, = true/false means filter by isActive = true/false.
-        selectedItems: null,
-        selectedMakers: null
-    }); 
 
-    //tabular filtered data
     const [filteredRules, setFilteredRules] = useState([]);
+    const [selectedItems, setSelectedItems] = useState([]);
+    const [showOnlyActive, setShowOnlyActive] = useState(false);
+    const [selectedUsers, setSelectedUsers] = useState([]);
 
     //form dialog
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -154,32 +150,43 @@ function RulesList({ userData, createRule, editRule }) {
     // Fetch data on component mount
     useEffect(() => {
         fetchRules();
+        fetchItems();
         fetchUsers();
         fetchProducts();
-        fetchItems();
+        
     }, []);
 
 
     useEffect(() => {
-        let filteredData = [...rules];
+        if (!rules.length || !items.length || !products.length) return;
 
-        if (filters.isActive !== null) {
-            filteredData = filteredData.filter(rule => rule.isActive === filters.isActive);
-        }
+        let result = [...rules];
 
-        if (Array.isArray(filters.selectedItems) && filters.selectedItems.length > 0) {
-            filteredData = filteredData.filter(rule =>
-                filters.selectedItems.includes(rule.parItemId)
-            );
-        }
-        if (Array.isArray(filters.selectedMakers) && filters.selectedMakers.length > 0) {
-            filteredData = filteredData.filter(rule =>
-                filters.selectedMakers.includes(rule.createdByUser)
+        // Filter by selected items
+        if (selectedItems.length > 0) {
+            result = result.filter(rule =>
+                selectedItems.includes(rule.parItemId)
             );
         }
 
-        setFilteredRules(filteredData);
-    }, [filters, rules]);
+        // Filter by active status
+        if (showOnlyActive) {
+            result = result.filter(rule => rule.isActive);
+        }
+
+        // Filter by selected users (use selected users only for filtering filteredRules)
+        if (selectedUsers.length > 0) {
+            result = result.filter(rule =>
+                selectedUsers.includes(rule.createdByUser)
+            );
+        }
+
+        setFilteredRules(result);
+    }, [rules, items, products, selectedItems, showOnlyActive, selectedUsers]);
+
+
+
+
 
 
     // Clear Filters
@@ -204,8 +211,7 @@ function RulesList({ userData, createRule, editRule }) {
         });
         setFilteredRules(rules); // Reset to show all rules
     };
-    
-    /////
+
 
 
 
@@ -314,111 +320,55 @@ function RulesList({ userData, createRule, editRule }) {
     };
     
     const getProductName = (parItemId) => {
+        console.log("Checking parItemId:", parItemId); // Log each parItemId passed to getProductName
         const item = items.find(i => i.parItemId === parItemId);
         if (item) {
-            const product = products.find(v => v.productId === item.productId)
-            return product ? product.name : "No Product Name"; // Display fallback text
+            const product = products.find(v => v.productId === item.productId);
+            console.log("Found product:", product); // Log found product for the given parItemId
+            return product ? product.name : "No Product Name";
         }
-        return "No Product Name"; // Fallback if item is not found
+        console.log("No item found for parItemId:", parItemId); // Log if item not found
+        return "No Product Name2"; // Fallback if item is not found
     };
 
-    const itemOptions = items
-        .filter(item => filteredRules.some(rule => rule.parItemId === item.parItemId))
+    const itemOptions = items.length && products.length ? items
+        .filter(item => {
+            return (selectedUsers.length === 0
+                ? rules.some(rule =>
+                    rule.parItemId === item.parItemId &&
+                    (!showOnlyActive || rule.isActive))
+                : selectedUsers.some(userId =>
+                    rules.some(rule =>
+                        rule.createdByUser === userId &&
+                        rule.parItemId === item.parItemId &&
+                        (!showOnlyActive || rule.isActive)))
+            );
+        })
         .map(item => ({
-            label: `${getProductName(item.parItemId)} (ID: ${item.productId})`,
+            label: getProductName(item.parItemId),
             value: item.parItemId
-        }));
+        })) : [];
 
-    const ruleMakers = users
-        .filter(user => filteredRules.some(rule => rule.createdByUser === user.userId))
+    // ruleMakers: Filter users based on selected items (items with rules created by those users)
+    const ruleMakers = users.length && rules.length ? users
+        .filter(user =>
+            selectedItems.length === 0
+                ? rules.some(rule =>
+                    rule.createdByUser === user.userId &&
+                    (!showOnlyActive || rule.isActive))
+                : selectedItems.some(parItemId =>
+                    rules.some(rule =>
+                        rule.createdByUser === user.userId &&
+                        rule.parItemId === parItemId &&
+                        (!showOnlyActive || rule.isActive))
+                )
+        )
         .map(user => ({
             label: `${user.firstName} ${user.lastName}`,
             value: user.userId
-        }));
+        })) : [];
 
-
-    //the filter display section
-    const FilterSection = ({ filters, setFilters, clearFilters }) => {
-        const handleActiveChange = (e) => {
-            setFilters(prev => ({
-                ...prev,
-                isActive: e.checked ? true : false, // null means show all
-            }));
-        };
-
-        return (
-            <div className="flex flex-wrap items-center gap-4 mb-4">
-                {/* Active Checkbox */}
-                <div className="flex items-center gap-2">
-                    <Checkbox
-                        inputId="activeOnly"
-                        checked={filters.isActive === true}
-                        onChange={handleActiveChange}
-                    />
-                    <label htmlFor="activeOnly">Active</label>
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-outlined p-button-danger p-button-sm"
-                        onClick={clearActiveFilter}
-                    />
-                </div>
-
-                {/* Product Filter */}
-                <div className="flex items-center gap-2">
-                    <MultiSelect
-                        value={filters.selectedItems}
-                        options={itemOptions}
-                        onChange={(e) => {
-                            const selectedItems = e.value.length > 0 ? e.value : null;
-                            setFilters(prev => ({
-                                ...prev,
-                                selectedItems: selectedItems
-                            }));
-                        }}
-                        placeholder="Filter by Product"
-                        display="chip"
-                        className="w-64"
-                    />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-outlined p-button-danger p-button-sm"
-                        onClick={clearItemFilter}
-                    />
-                </div>
-
-                {/* Maker Filter */}
-                <div className="flex items-center gap-2">
-                    <MultiSelect
-                        value={filters.selectedMakers}
-                        options={ruleMakers}
-                        onChange={(e) => {
-                            const selectedMakers = e.value.length > 0 ? e.value : null;
-                            setFilters(prev => ({
-                                ...prev,
-                                selectedMakers: selectedMakers
-                            }));
-                        }}
-                        placeholder="Filter by Maker"
-                        display="chip"
-                        className="w-64"
-                    />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-outlined p-button-danger p-button-sm"
-                        onClick={clearMakerFilter}
-                    />
-                </div>
-
-                {/* Clear All Filters */}
-                <Button
-                    label="Clear All"
-                    icon="pi pi-filter-slash"
-                    className="p-button-secondary p-button-sm"
-                    onClick={clearFilters}
-                />
-            </div>
-        );
-    };
+    
 
     // Editable dropdown cell - editable row but you have to choose from dropdown list
     const editableDropdownCell = (field, options, rowData, labelField, valueField = field) => {
@@ -473,7 +423,38 @@ function RulesList({ userData, createRule, editRule }) {
                     />)}
             </div>
 
-            <FilterSection filters={filters} setFilters={setFilters} clearFilters={clearFilters} />
+            <div className="p-mb-4 flex gap-4 items-end flex-wrap">
+                {/* Item Filter */}
+                <div className="flex items-center gap-2">
+                    <MultiSelect
+                        value={selectedItems}
+                        onChange={(e) => setSelectedItems(e.value)}
+                        options={items.length && products.length ? itemOptions : []}  // Only render options when data is available
+                        placeholder="Select Item"
+                        display="chip"
+                    />
+                    <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
+                </div>
+
+                {/* Active Checkbox */}
+                <div className="flex items-center gap-2">
+                    <Checkbox inputId="activeOnly" checked={showOnlyActive} onChange={(e) => setShowOnlyActive(e.checked)} />
+                    <label htmlFor="activeOnly">Only Active</label>
+                </div>
+
+                {/* Created By Filter */}
+                <div className="flex items-center gap-2">
+                    <MultiSelect
+                        value={selectedUsers}
+                        options={ruleMakers}  // Use the ruleMakers here
+                        onChange={(e) => setSelectedUsers(e.value)}
+                        placeholder="Filter by Created By"
+                        className="w-60"
+                        display="chip"
+                    />
+                    <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedUsers([])} />
+                </div>
+            </div>
 
             <DataTable
                 value={filteredRules.length > 0 ? filteredRules : rules}  // Show filtered or all rules
@@ -523,6 +504,7 @@ function RulesList({ userData, createRule, editRule }) {
                         editableDropdownCell("isActive", statusOptions, rowData, "label", "code")
                     }
                 />
+                {editRule && (
                 <Column
                     body={(rowData) => (
                         <>
@@ -539,7 +521,7 @@ function RulesList({ userData, createRule, editRule }) {
                         </>
                     )}
                     style={{ width: "6rem" }}
-                />
+                />)}
             </DataTable>
 
             {createRule && (

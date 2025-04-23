@@ -39,6 +39,7 @@ function App() {
         setUserDetails(null);
         setRoleData(null);
         setSelectedPage("items");
+        
     };
 
     useEffect(() => {
@@ -109,7 +110,7 @@ function App() {
                             <RulesList
                                 userData={userDetails}
                                 createRule={roleData.createRule}
-                                editRule={roleData.EditRule}
+                                editRule={roleData.editRule}
                             />
                         )}
 
@@ -136,7 +137,7 @@ function App() {
 
                         {/*Notes*/}
                         {selectedPage === "notes" && (
-                            <NotesTable/>
+                            <NotesTable userId={userId} />
                         )}
                     </div>
                 </>
