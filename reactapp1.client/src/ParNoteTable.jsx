@@ -21,48 +21,54 @@ function NotesTable({ userId }) {
 
     const [filteredNotes, setFilteredNotes] = useState([]);
 
-    const [filters, setFilters] = useState({
-        isActive: null, // null = no filter, = true/false means filter by isActive = true/false.
-        selectedItems: null,
-        selectedMakers: null,
-        selectedRules:null
-    }); 
-
-
+    const [selectedItems, setSelectedItems] = useState([]);
+    const [showOnlyActive, setShowOnlyActive] = useState(false);
+    const [selectedUsers, setSelectedUsers] = useState([]);
+    const [selectedRules, setSelectedRules] = useState([]);
 
 
     const getRule = (ruleId) => {
         const rule = rules.find(r => r.ruleId === ruleId);
-        return rule ? `RuleID: (${rule.ruleId}) Active: ${rule.isActive ? 'Y' : 'N'}` : 'Rule not found';
+        if (rule) {
+            return { isActive: rule.isActive, ruleId: rule.ruleId };
+        }
+        return { isActive: false, ruleId: null };  // Return a default value if the rule is not found
     };
 
     useEffect(() => {
-        let filteredData = [...notes];
+        if (!notes.length || !rules.length) return;
 
-        // Filter by isActive
-        if (filters.isActive !== null) {
-            filteredData = filteredData.filter(note => {
-                const rule = rules.find(r => r.ruleId === note.ruleId);
-                return rule && rule.isActive === filters.isActive;
+        let result = [...notes];
+
+        // Filter by selected items
+        if (selectedItems.length > 0) {
+            result = result.filter(note => selectedItems.includes(note.parItemId));
+        }
+
+        // Filter by selected rule IDs (this applies regardless of rule active status)
+        if (selectedRules.length > 0) {
+            result = result.filter(note => selectedRules.includes(note.ruleId));
+        }
+
+        // Filter by active status using getRule, apply only if showOnlyActive is checked
+        if (showOnlyActive) {
+            result = result.filter(note => {
+                const rule = getRule(note.ruleId);  // Get the rule associated with the note
+                return rule && rule.isActive;  // Only include active rules if showOnlyActive is true
             });
         }
 
-        // Filter by selectedItems (parItemId)
-        if (Array.isArray(filters.selectedItems) && filters.selectedItems.length > 0) {
-            filteredData = filteredData.filter(note =>
-                filters.selectedItems.includes(note.parItemId)
-            );
+        // Filter by selected users
+        if (selectedUsers.length > 0) {
+            result = result.filter(note => selectedUsers.includes(note.createdByUser));
         }
 
-        // Filter by selectedMakers (createdByUser)
-        if (Array.isArray(filters.selectedMakers) && filters.selectedMakers.length > 0) {
-            filteredData = filteredData.filter(note =>
-                filters.selectedMakers.includes(note.createdByUser)
-            );
-        }
+        setFilteredNotes(result);
+    }, [notes, selectedItems, showOnlyActive, selectedUsers, selectedRules, rules]);
 
-        setFilteredNotes(filteredData);
-    }, [filters, notes, rules]);
+
+
+
 
     const fetchNotes = () => {
         fetch("https://localhost:7245/api/ParNote")
@@ -219,121 +225,109 @@ function NotesTable({ userId }) {
         return user ? `${user.firstName} ${user.lastName}` : `User ID: ${userId}`;
     };
 
-    
+    const itemOptions = items.length && products.length ? items
+        .filter(item => {
+            return (selectedUsers.length === 0
+                ? notes.some(note => {
+                    const rule = getRule(note.ruleId); // Get the rule for this note
+                    return note.parItemId === item.parItemId &&
+                        (!showOnlyActive || rule.isActive);  // Check if rule is active
+                })
+                : selectedUsers.some(userId => {
+                    return notes.some(note => {
+                        const rule = getRule(note.ruleId); // Get the rule for this note
+                        return note.createdByUser === userId &&
+                            note.parItemId === item.parItemId &&
+                            (!showOnlyActive || rule.isActive); // Check if rule is active
+                    });
+                })
+            );
+        })
+        .map(item => ({
+            label: getProductName(item.parItemId),
+            value: item.parItemId
+        })) : [];
 
-    
-
-    const FilterSection = ({ filters, setFilters, clearFilters }) => {
-        const handleActiveChange = (e) => {
-            setFilters(prev => ({
-                ...prev,
-                isActive: e.checked ? true : false, // null means show all
-            }));
-        };
-
-        return (
-            <div className="flex flex-wrap items-center gap-4 mb-4">
-                {/* Active Checkbox */}
-                <div className="flex items-center gap-2">
-                    <Checkbox
-                        inputId="activeOnly"
-                        checked={filters.isActive === true}
-                        onChange={handleActiveChange}
-                    />
-                    <label htmlFor="activeOnly">Active</label>
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-outlined p-button-danger p-button-sm"
-                        onClick={clearActiveFilter}
-                    />
-                </div>
-
-                {/* Product Filter */}
-                <div className="flex items-center gap-2">
-                    <MultiSelect
-                        value={filters.selectedItems}
-                        options={itemOptions}
-                        onChange={(e) => {
-                            const selectedItems = e.value.length > 0 ? e.value : null;
-                            setFilters(prev => ({
-                                ...prev,
-                                selectedItems: selectedItems
-                            }));
-                        }}
-                        placeholder="Filter by Product"
-                        display="chip"
-                        className="w-64"
-                    />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-outlined p-button-danger p-button-sm"
-                        onClick={clearItemFilter}
-                    />
-                </div>
-
-                {/* Maker Filter */}
-                <div className="flex items-center gap-2">
-                    <MultiSelect
-                        value={filters.selectedMakers}
-                        options={noteMakers}
-                        onChange={(e) => {
-                            const selectedMakers = e.value.length > 0 ? e.value : null;
-                            setFilters(prev => ({
-                                ...prev,
-                                selectedMakers: selectedMakers
-                            }));
-                        }}
-                        placeholder="Filter by Maker"
-                        display="chip"
-                        className="w-64"
-                    />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-outlined p-button-danger p-button-sm"
-                        onClick={clearMakerFilter}
-                    />
-                </div>
-                {/* Rule Filter */}
-                <div className="flex items-center gap-2">
-                    <MultiSelect
-                        value={filters.selectedRules}
-                        options={ruleOptions}
-                        onChange={(e) => {
-                            const selectedRules = e.value.length > 0 ? e.value : null;
-                            setFilters(prev => ({
-                                ...prev,
-                                selectedRules: selectedRules
-                            }));
-                        }}
-                        placeholder="Filter by Rules"
-                        display="chip"
-                        className="w-64"
-                    />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-outlined p-button-danger p-button-sm"
-                        onClick={clearRuleFilter}
-                    />
-                </div>
-                {/* Clear All Filters */}
-                <Button
-                    label="Clear All"
-                    icon="pi pi-filter-slash"
-                    className="p-button-secondary p-button-sm"
-                    onClick={clearFilters}
-                />
-            </div>
+    const noteMakers = users.length && notes.length ? users
+    .filter(user => {
+        return (selectedItems.length === 0
+            ? notes.some(note => 
+                note.createdByUser === user.userId &&
+                (!selectedRules.length || selectedRules.includes(note.ruleId)) // Check if note's ruleId matches selected rules
+            )
+            : selectedItems.some(parItemId => {
+                return notes.some(note => 
+                    note.createdByUser === user.userId &&
+                    note.parItemId === parItemId &&
+                    (!selectedRules.length || selectedRules.includes(note.ruleId)) // Check if note's ruleId matches selected rules
+                );
+            })
         );
-    };
+    })
+    .map(user => ({
+        label: `${user.firstName} ${user.lastName}`,
+        value: user.userId
+    })) : [];
+
+
+    const ruleOptions = rules.length ? rules
+        // First, filter the rules that are associated with at least one note
+        .filter(rule => notes.some(note => note.ruleId === rule.ruleId))
+        // If there are selected users, filter rules to include only those with notes from selected users
+        .filter(rule => {
+            if (selectedUsers.length > 0) {
+                return notes.some(note =>
+                    note.ruleId === rule.ruleId && selectedUsers.includes(note.createdByUser)
+                );
+            }
+            return true;  // If no selected users, include all rules
+        })
+        // Apply the showOnlyActive filter (only show active rules if checked)
+        .filter(rule => !showOnlyActive || rule.isActive)
+        .map(rule => ({
+            label: `RuleID: (${rule.ruleId}) Active: ${rule.isActive ? 'Y' : 'N'}`,
+            value: rule.ruleId
+        })) : [];
+
+  
 
     return (
         <div className="p-4">
             <h1>Note List</h1>
-            <FilterSection
-                filters={filters}
-                setFilters={setFilters}
-                clearFilters={clearFilters}
-            />
+            <div className="flex items-center gap-2">
+                <MultiSelect
+                    value={selectedItems}
+                    onChange={(e) => setSelectedItems(e.value)}
+                    options={itemOptions}  // Use the itemOptions here
+                    placeholder="Select Item"
+                    display="chip"
+                />
+                <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
+            </div>
+            <div className="flex items-center gap-2">
+                <MultiSelect
+                    value={selectedRules}
+                    onChange={(e) => setSelectedRules(e.value)}
+                    options={ruleOptions}  // Use the itemOptions here
+                    placeholder="Select Rule"
+                    display="chip"
+                />
+                <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
+            </div>
+            <div className="flex items-center gap-2">
+                <MultiSelect
+                    value={selectedUsers}
+                    onChange={(e) => setSelectedUsers(e.value)}
+                    options={noteMakers}  // Use the itemOptions here
+                    placeholder="Select Users"
+                    display="chip"
+                />
+                <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
+            </div>
+            <div className="flex items-center gap-2">
+                <Checkbox inputId="activeOnly" checked={showOnlyActive} onChange={(e) => setShowOnlyActive(e.checked)} />
+                <label htmlFor="activeOnly">Only Active</label>
+            </div>
             <Button
                 label="Create New Note"
                 icon="pi pi-plus"
@@ -345,6 +339,8 @@ function NotesTable({ userId }) {
                 onSuccess={handleNoteCreated}
                 userId={userId}
             />
+
+
             <DataTable
                 value={filteredNotes}
                 paginator
