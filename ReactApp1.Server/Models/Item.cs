@@ -101,6 +101,27 @@ public static class ItemEndpoints //created by making a Controller vv
         .WithName("UpdateItem")
         .WithOpenApi();
 
+        group.MapPut("/products/{productId}", async Task<Results<Ok<int>, NotFound>> (
+        int productId,
+        Item item,
+        parDbContext db) =>
+            {
+                // Make sure SubCatId and CatId are nullable in the model (int? type)
+
+                var affected = await db.Items
+                    .Where(model => model.ProductId == productId)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(m => m.CatId, item.CatId)       // Will accept null for CatId
+                        .SetProperty(m => m.SubCatId, item.SubCatId) // Will accept null for SubCatId
+                                                                     // Add more fields as needed
+                    );
+
+                return affected > 0 ? TypedResults.Ok(affected) : TypedResults.NotFound();
+            })
+        .WithName("UpdateItemsByProduct")
+        .WithOpenApi();
+
+
         group.MapPost("/", async (Item item, parDbContext db) =>
         {
             db.Items.Add(item);

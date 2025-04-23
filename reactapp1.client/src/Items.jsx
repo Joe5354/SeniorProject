@@ -118,37 +118,36 @@ function AllItemsList({ permissionData }) {
     };
 
     const onRowEditSave = () => {
-        // Remove `parItemId` from the item data to avoid updating the identity column
-        const { parItemId, ...itemToUpdate } = editedItem;
+        const { productId, parItemId, ...fieldsToUpdate } = editedItem;
 
-        // Call the API to update the item in the database
-        fetch(`https://localhost:7245/api/item/${parItemId}`, {
-            method: "PUT", // PUT method to update
+        fetch(`https://localhost:7245/api/item/products/${productId}`, {
+            method: "PUT",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(itemToUpdate), // Send the updated item data without parItemId
+            body: JSON.stringify(fieldsToUpdate),
         })
             .then((response) => {
                 if (!response.ok) {
-                    throw new Error("Failed to update item");
+                    throw new Error("Failed to update items");
                 }
-                return response.json();
+                return response.json(); // Assuming this returns updated items
             })
-            .then((data) => {
-                // Update the items state with the updated data
+            .then((updatedItems) => {
+                // Replace items with same productId
                 setItems((prevItems) =>
                     prevItems.map((item) =>
-                        item.parItemId === parItemId ? { ...item, ...itemToUpdate } : item
+                        item.productId === productId
+                            ? { ...item, ...fieldsToUpdate }
+                            : item
                     )
                 );
-                // Reset the editing state
                 setEditingRow(null);
                 setEditedItem(null);
             })
             .catch((error) => {
-                console.error("Error saving item:", error);
-                alert("Error saving item");
+                console.error("Error saving items:", error);
+                alert("Error saving items");
             });
     };
 
@@ -164,14 +163,27 @@ function AllItemsList({ permissionData }) {
 
     const editableDropdownCell = (field, options, rowData, labelField, valueField = field) => {
         if (editingRow && editingRow.parItemId === rowData.parItemId) {
+            // Add the "None" option to the dropdown options with the same structure as the other options
+            const dropdownOptions = field === "subCatId"
+                ? [{
+                    subCatId: null,
+                    catId: null,
+                    subCatName: "None",  // Display "None" in the dropdown
+                    subCatDesc: "None",  // Optionally, you can set a description as well
+                    cat: null,
+                    items: []
+                }, ...options] // Empty value for "None" option
+                : options;
+
             return (
                 <Dropdown
-                    value={editedItem[field]}
-                    options={options}
+                    value={editedItem[field] ?? ''} // Use empty string if null or undefined
+                    options={dropdownOptions}
                     onChange={(e) => handleEditChange({ target: { value: e.value } }, field)}
                     optionLabel={labelField}
                     optionValue={valueField}
                     placeholder="Select"
+                    emptyMessage="No options available"
                 />
             );
         }
@@ -183,22 +195,15 @@ function AllItemsList({ permissionData }) {
         return found ? found[labelField] : rowData[field];
     };
 
+
+
+
+
     const onRowEditCancel = () => {
         setEditingRow(null);
         setEditedItem(null);
     };
 
-    const editableCell = (field, rowData) => {
-        if (editingRow && editingRow.parItemId === rowData.parItemId) {
-            return (
-                <InputText
-                    value={editedItem[field]}
-                    onChange={(e) => handleEditChange(e, field)}
-                />
-            );
-        }
-        return rowData[field]; // Display value if not in edit mode
-    };
 
     const intermediateFilteredItems = items.filter(item => {
         const matchesCountFilter =
@@ -263,15 +268,12 @@ function AllItemsList({ permissionData }) {
 });
     const productOptions = products
         .filter(p => {
-            const associatedItem = items.find(item => item.productId === p.productId); // Match product to item
+            const matchingItems = items.filter(item => item.productId === p.productId);
+            if (matchingItems.length === 0) return false;
 
-            if (!associatedItem) return false; // Exclude products with no matching item
-
-            const catId = associatedItem.catId; // Get category from associated item
-
-            return (
-                (selectedCategories.length === 0 || selectedCategories.includes(catId)) &&
-                (selectedSubCategories.length === 0 || selectedSubCategories.includes(p.subCatId))
+            return matchingItems.some(item =>
+                (selectedCategories.length === 0 || selectedCategories.includes(item.catId)) &&
+                (selectedSubCategories.length === 0 || selectedSubCategories.includes(item.subCatId))
             );
         })
         .map(p => ({ label: p.name, value: p.productId }));
@@ -302,6 +304,14 @@ function AllItemsList({ permissionData }) {
             (selectedCategories.length === 0 || selectedCategories.includes(sc.catId))
         )
         .map(sc => ({ label: sc.subCatDesc, value: sc.subCatId }));
+
+    const clearAllFilters = () => {
+        setSelectedCountFilter(null);
+        setSelectedCategories([]);
+        setSelectedSubCategories([]);
+        setSelectedProducts([]);
+        setOnlyUnique(false);
+    };
     return (
         <div className="p-4">
             <h1>Item List</h1>
@@ -395,6 +405,14 @@ function AllItemsList({ permissionData }) {
                         />
                     )}
                 </div>
+                {/* Clear All Filters Button */}
+                {/* Clear All Filters */}
+                <Button
+                    label="Clear All"
+                    icon="pi pi-filter-slash"
+                    className="p-button-secondary p-button-sm"
+                    onClick={clearAllFilters}
+                />
             </div>
 
 
