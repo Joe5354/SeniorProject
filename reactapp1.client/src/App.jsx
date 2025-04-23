@@ -118,7 +118,7 @@ function App() {
                         {/*Users*/}
                         {selectedPage === "users" && (
                             <div >
-                                <UsersList />
+                                <UsersList editUser={roleData.editUser} createUser={ roleData.createUser} />
                                 <Button
                                     label="Create New User"
                                     icon="pi pi-user-plus"

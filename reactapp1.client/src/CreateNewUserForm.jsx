@@ -139,7 +139,10 @@ function CreateNewUserForm({ visible, onHide, onSuccess }) {
                         id="userRoleId"
                         name="userRoleId"
                         value={formData.userRoleId}
-                        options={roles.map(role => ({ label: role.description, value: role.userRoleId }))}
+                        options={roles
+                            .filter(role => role.userRoleId !== 1)
+                            .map(role => ({ label: role.description, value: role.userRoleId }))
+                        }
                         onChange={(e) => setFormData(prev => ({ ...prev, userRoleId: e.value }))}
                         placeholder="Select a Role"
                         required

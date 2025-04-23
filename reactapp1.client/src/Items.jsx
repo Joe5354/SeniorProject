@@ -9,7 +9,7 @@ import { MultiSelect } from 'primereact/multiselect';
 function AllItemsList({ permissionData }) {
     const [items, setItems] = useState([]);
     const [rules, setRules] = useState([]);
-    const [filteredItems, setFilteredItems] = useState([]);
+    
     const [products, setProducts] = useState([]);
     const [cats, setCats] = useState([]);
     const [sCats, setSCats] = useState([]);
@@ -18,7 +18,7 @@ function AllItemsList({ permissionData }) {
 
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [selectedSubCategories, setSelectedSubCategories] = useState([]);
-
+    const [filteredItems, setFilteredItems] = useState([]);
     const [onlyParAlerts, setOnlyParAlerts] = useState(false);
     const [selectedCountFilter, setSelectedCountFilter] = useState(null); // 'null', '!null', or null
     const [selectedProducts, setSelectedProducts] = useState([]);
@@ -332,9 +332,10 @@ function AllItemsList({ permissionData }) {
         setOnlyUnique(false);
     };
     return (
-        <div className="p-4">
+        <div className="parent-container">
+            <div className="other-content">
             <h1>Item List</h1>
-
+            </div>
 
             <div className="p-mb-4 flex gap-4 items-end flex-wrap">
                 {/* Only Par Alerts */}
@@ -345,6 +346,14 @@ function AllItemsList({ permissionData }) {
                         onChange={(e) => setOnlyParAlerts(e.checked)}
                     />
                     <label htmlFor="onlyParAlerts">Only Par Alerts</label>
+                    {onlyParAlerts && (
+                        <Button
+                            icon="pi pi-times"
+                            className="p-button-text p-button-sm"
+                            onClick={() => setOnlyParAlerts(false)}
+                            tooltip="Clear Par Alerts filter"
+                        />
+                    )}
                 </div>
                 {/* Category Filter */}
                 <div className="flex items-center gap-2">
@@ -356,12 +365,13 @@ function AllItemsList({ permissionData }) {
                         className="w-60"
                         display="chip"
                     />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-text p-button-sm"
-                        onClick={() => setSelectedCategories([])}
-                        tooltip="Clear Category filter"
-                    />
+                    {selectedCategories.length > 0 && (
+                        <Button
+                            icon="pi pi-times"
+                            className="p-button-text p-button-sm"
+                            onClick={() => setSelectedCategories([])}
+                            tooltip="Clear Category filter"
+                        />)}
                 </div>
 
                 {/* Subcategory Filter */}
@@ -374,12 +384,13 @@ function AllItemsList({ permissionData }) {
                         className="w-60"
                         display="chip"
                     />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-text p-button-sm"
-                        onClick={() => setSelectedSubCategories([])}
-                        tooltip="Clear Subcategory filter"
-                    />
+                    {selectedSubCategories.length > 0 && (
+                        <Button
+                            icon="pi pi-times"
+                            className="p-button-text p-button-sm"
+                            onClick={() => setSelectedSubCategories([])}
+                            tooltip="Clear Subcategory filter"
+                        />)}
                 </div>
                 {/* TotalCount Filter */}
                 <div className="flex items-center gap-2">
@@ -390,12 +401,13 @@ function AllItemsList({ permissionData }) {
                         placeholder="Filter by Total Count"
                         className="w-60"
                     />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-text p-button-sm"
-                        onClick={() => setSelectedCountFilter(null)}
-                        tooltip="Clear Total Count filter"
-                    />
+                    {selectedCountFilter && (
+                        <Button
+                            icon="pi pi-times"
+                            className="p-button-text p-button-sm"
+                            onClick={() => setSelectedCountFilter(null)}
+                            tooltip="Clear Total Count filter"
+                        />)}
                 </div>
 
                 {/* Product Filter */}
@@ -408,20 +420,22 @@ function AllItemsList({ permissionData }) {
                         className="w-60"
                         display="chip"
                     />
-                    <Button
-                        icon="pi pi-times"
-                        className="p-button-text p-button-sm"
-                        onClick={() => setSelectedProducts([])}
-                        tooltip="Clear Product filter"
-                    />
+                    {selectedProducts.length > 0 && (
+                        <Button
+                            icon="pi pi-times"
+                            className="p-button-text p-button-sm"
+                            onClick={() => setSelectedProducts([])}
+                            tooltip="Clear Product filter"
+                        />
+                    )}
                 </div>
 
                 {/* Unique Checkbox */}
                 <div className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
+                    <Checkbox
+                        inputId="onlyParAlerts"
                         checked={onlyUnique}
-                        onChange={(e) => setOnlyUnique(e.target.checked)}
+                        onChange={(e) => setOnlyUnique(e.checked)}
                     />
                     <label>Only Unique Products</label>
                     {onlyUnique && (
@@ -434,7 +448,6 @@ function AllItemsList({ permissionData }) {
                     )}
                 </div>
                 {/* Clear All Filters Button */}
-                {/* Clear All Filters */}
                 <Button
                     label="Clear All"
                     icon="pi pi-filter-slash"
@@ -445,7 +458,7 @@ function AllItemsList({ permissionData }) {
 
 
 
-
+            <div className="datatable-container">
             <DataTable
                 value={filteredItems}
                 paginator
@@ -457,7 +470,7 @@ function AllItemsList({ permissionData }) {
                 scrollHeight="400px"
                 stripedRows
             >
-                <Column field="productId" header="Product Name" sortable body={(rowData) => getProductName(rowData.parItemId)} style={{ width: '250px' }} />
+                <Column field="productId" header="Product Name" sortable body={(rowData) => getProductName(rowData.parItemId)} style={{ width: '350px' }} />
                 <Column field="catId"
                     header="Category"
                     sortable
@@ -465,6 +478,7 @@ function AllItemsList({ permissionData }) {
                     body={(rowData) =>
                         editableDropdownCell("catId", cats, rowData, "catDesc", "catId")
                     }
+                    style={{ width: '100px' }}
                 />
                 <Column
                     field="subCatId"
@@ -481,9 +495,10 @@ function AllItemsList({ permissionData }) {
                             "subCatId"
                         )
                     }
+                    style={{ width: '100px' }}
                 />
-                <Column field="barcode" header="Barcode" sortable />
-                <Column field="totalCount" header="Total Count" sortable />
+                {/*<Column field="barcode" header="Barcode" sortable style={{ width: '0px' }} />*/}
+                <Column field="totalCount" header="Total Count" sortable style={{ width: '50px' }} />
                 <Column
                     body={(rowData) => (
                         <>
@@ -499,9 +514,10 @@ function AllItemsList({ permissionData }) {
                             )}
                         </>
                     )}
-                    style={{ width: "6rem" }}
+                    style={{ width: '50px' }}
                 />
-            </DataTable>
+                </DataTable>
+            </div>
         </div>
     );
 }

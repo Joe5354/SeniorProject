@@ -326,7 +326,109 @@ input:focus,
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Ensure all rows have the same height */
+.p-datatable .p-datatable-tbody > tr {
+    height: 30px; /* Set a fixed height for the rows */
+}
+    .p-datatable .p-datatable-tbody > tr > td {
+        padding-top: 0.05rem; /* Less padding on top */
+        padding-bottom: 0.05rem; /* Less padding on bottom */
+    }
+.p-datatable .p-datatable-thead > tr > th {
+    padding-left: 0.5rem; /* Adjust this to control the left padding */
+}
+
+/* Add padding to the body cells */
+.p-datatable .p-datatable-tbody > tr > td {
+    padding-left: 0.5rem; /* Adjust this to control the left padding */
+}
+    /* Adjust the content of cells */
+    .p-datatable .p-datatable-tbody > tr > td {
+        vertical-align: middle; /* Align the content vertically in the middle */
+    }
+
+    /* Button alignment and sizing */
+    .p-datatable .p-datatable-tbody > tr .p-button {
+        padding: 0.3rem 0.6rem; /* Adjust padding to ensure button doesn't overflow */
+        display: inline-flex; /* Make sure the button doesn't stretch */
+        align-items: center; /* Center the button's content */
+    }
+
     .user-id-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
+
+
+/* Adjust tooltip appearance */
+.p-tooltip .p-tooltip-text {
+    opacity: 0.7; /* Make it less intense */
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+    color: #fff; /* Text color */
+    font-size: 12px; /* Optional: Adjust text size */
+}
+
+/* Remove the tooltip arrow */
+.p-tooltip .p-tooltip-arrow {
+    display: none;
+}
+/* Make the parent container a flex container */
+.parent-container {
+    display: flex;
+    flex-direction: column;  /* Stack child elements vertically */
+    height: 60vh;  /* Full height of the viewport */
+    padding: 20px;  /* Adjust padding as needed */
+    box-sizing: border-box;
+}
+
+/* Container for the DataTable */
+.datatable-container {
+    flex-grow: 1; /* Allow DataTable to grow and fill available space */
+    overflow-y: auto; /* Scrollable if content overflows */
+    height: calc(100vh - 200px); /* Adjust to use less height, for example */
+    /* Alternatively, use max-height if you want to prevent excessive stretching */
+    max-height: 58vh; /* Set a limit on the height */
+    flex-grow: 1; /* Allow DataTable to grow and take up available space */
+    min-width: 0; /* Prevent DataTable from shrinking too much */
+    display: flex; /* Force DataTable to behave as a flex item */
+    flex-direction: column; /* Ensure DataTable stretches vertically */
+}
+
+/* Optional: Control height of DataTable */
+.p-datatable {
+    height: 100%;  /* Ensure the table takes full height of its container */
+    overflow: hidden;  /* Prevent content overflow */
+}
+/* Subtle blue for selected row */
+.p-datatable .p-datatable-tbody > tr.p-highlight {
+    background-color: #e6f3ff !important;
+    color: inherit !important;
+}
+
+    /* Keep it from changing on hover */
+    .p-datatable .p-datatable-tbody > tr.p-highlight:hover {
+        background-color: #e6f3ff !important;
+    }
+
+/* Optional: grey-ish hover for unselected rows */
+.p-datatable .p-datatable-tbody > tr:not(.p-highlight):hover {
+    background-color: #f4f4f4 !important;
+}
+
+.flex-container {
+    display: flex;
+    flex-direction: row; /* Align children side by side */
+    gap: 20px; /* Optional: Add space between DataTable and InputText */
+    justify-content: flex-start; /* Align children to the start of the container */
+    width: 100%; /* Ensure container takes full width */
+    height: 70vh;
+}
+
+
+.selected-note-container {
+    flex-shrink: 0; /* Prevent the note section from shrinking */
+    width: 300px; /* Set a fixed width for the note section, or adjust as needed */
+    display: flex;
+    flex-direction: column; /* Ensure InputText is vertically aligned */
+    justify-content: flex-start; /* Align the note field at the top */
+}

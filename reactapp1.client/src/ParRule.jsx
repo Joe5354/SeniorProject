@@ -399,7 +399,12 @@ function RulesList({ userData, createRule, editRule }) {
 
 
 
-
+    const clearAllFilters = () => {
+        setSelectedItems([]); // Clear selected items filter
+        setShowOnlyActive(false); // Uncheck "Only Active" checkbox
+        setSelectedUsers([]); // Clear selected users filter
+        setFilteredRules(rules); // Reset filtered rules to show all rules
+    };
 
     //The Display:::::::
     return (
@@ -433,13 +438,24 @@ function RulesList({ userData, createRule, editRule }) {
                         placeholder="Select Item"
                         display="chip"
                     />
-                    <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-sm p-ml-2"
+                        onClick={() => setSelectedItems([])}
+                        tooltip="Clear Selected Items"
+                    />
                 </div>
 
                 {/* Active Checkbox */}
                 <div className="flex items-center gap-2">
                     <Checkbox inputId="activeOnly" checked={showOnlyActive} onChange={(e) => setShowOnlyActive(e.checked)} />
-                    <label htmlFor="activeOnly">Only Active</label>
+                    <label htmlFor="activeOnly">Only Active Rules</label>
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-sm p-ml-2"
+                        onClick={() => setShowOnlyActive(false)}
+                        tooltip="Clear Show Only Active"
+                    />
                 </div>
 
                 {/* Created By Filter */}
@@ -452,10 +468,23 @@ function RulesList({ userData, createRule, editRule }) {
                         className="w-60"
                         display="chip"
                     />
-                    <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedUsers([])} />
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-sm p-ml-2"
+                        onClick={() => setSelectedUsers([])}
+                        tooltip="Clear Selected users"
+                    />
                 </div>
-            </div>
 
+                {/* Clear All Filters Button */}
+                <Button
+                    label="Clear All"
+                    icon="pi pi-filter-slash"
+                    className="p-button-secondary p-button-sm"
+                    onClick={clearAllFilters}
+                />
+            </div>
+            <div className = "datatable-container">
             <DataTable
                 value={filteredRules.length > 0 ? filteredRules : rules}  // Show filtered or all rules
                 paginator
@@ -471,6 +500,7 @@ function RulesList({ userData, createRule, editRule }) {
                     header="Rule Name"
                     sortable
                     style={{ width: '90px' }}
+                    body={(rowData) => `${rowData.ruleName} ID: ${rowData.ruleId}`}
                 />
                 <Column
                     field="parItemId"
@@ -523,7 +553,7 @@ function RulesList({ userData, createRule, editRule }) {
                     style={{ width: "6rem" }}
                 />)}
             </DataTable>
-
+            </div>
             {createRule && (
                 <CreateParRule
                     visible={showCreateDialog}

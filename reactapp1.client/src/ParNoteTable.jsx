@@ -18,7 +18,7 @@ function NotesTable({ userId }) {
     const [rules, setRules] = useState([]);
     const [products, setProducts] = useState([]);
     const [users, setUsers] = useState([]);
-
+    const [selectedRow, setSelectedRow] = useState(null);
     const [filteredNotes, setFilteredNotes] = useState([]);
 
     const [selectedItems, setSelectedItems] = useState([]);
@@ -294,7 +294,7 @@ function NotesTable({ userId }) {
     return (
         <div className="p-4">
             <h1>Note List</h1>
-            <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-2">
                 <MultiSelect
                     value={selectedItems}
                     onChange={(e) => setSelectedItems(e.value)}
@@ -303,8 +303,7 @@ function NotesTable({ userId }) {
                     display="chip"
                 />
                 <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
-            </div>
-            <div className="flex items-center gap-2">
+            
                 <MultiSelect
                     value={selectedRules}
                     onChange={(e) => setSelectedRules(e.value)}
@@ -313,8 +312,7 @@ function NotesTable({ userId }) {
                     display="chip"
                 />
                 <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
-            </div>
-            <div className="flex items-center gap-2">
+            
                 <MultiSelect
                     value={selectedUsers}
                     onChange={(e) => setSelectedUsers(e.value)}
@@ -323,34 +321,39 @@ function NotesTable({ userId }) {
                     display="chip"
                 />
                 <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
-            </div>
-            <div className="flex items-center gap-2">
+            
                 <Checkbox inputId="activeOnly" checked={showOnlyActive} onChange={(e) => setShowOnlyActive(e.checked)} />
                 <label htmlFor="activeOnly">Only Active</label>
-            </div>
+            
             <Button
                 label="Create New Note"
                 icon="pi pi-plus"
                 onClick={() => setShowCreateDialog(true)}
-            />
+                />
+
             <CreateParNote
                 visible={showCreateDialog}
                 onHide={() => setShowCreateDialog(false)}
                 onSuccess={handleNoteCreated}
                 userId={userId}
             />
-
-
+             <div className="flex-container">
             <DataTable
-                value={filteredNotes}
-                paginator
-                rows={5}
-                responsiveLayout="scroll"
-                dataKey="noteId"
-                filterDisplay="menu"
-                style={{ maxWidth: "100%" }}  // Max width for responsiveness
-                scrollable // Add scrolling
-                scrollHeight="400px"
+                            value={filteredNotes}
+                            paginator
+                            rows={5}
+                            responsiveLayout="scroll"
+                            dataKey="noteId"
+                            filterDisplay="menu"
+                            style={{ maxWidth: "100%" }}  // Max width for responsiveness
+                            scrollable // Add scrolling
+                            scrollHeight="400px"
+                            selection={selectedRow}
+                            onSelectionChange={(e) => setSelectedRow(e.value)}  // Only one row will be selected at a time
+                            selectionMode="single"
+                            style={{width:'1000px'} }
+
+
             >
                 <Column field="productId" header="Product Name" sortable body={(rowData) => getProductName(rowData.parItemId)} style={{ width: '250px' }} />
                 <Column field="ruleId" header="Rule ID" sortable />
@@ -375,7 +378,20 @@ function NotesTable({ userId }) {
                     )}
                     style={{ width: "6rem" }}
                 />
-            </DataTable>
+                </DataTable>
+                {selectedRow && (
+                            <div className="selected-note-container">
+                        <label htmlFor="selectedNote">Selected Note</label>
+                        <InputText
+                            id="selectedNote"
+                            value={selectedRow.note}
+                            readOnly
+                            className="w-full"
+                        />
+                    </div>
+                        )}
+            </div>
+            </div>
         </div>
     );
 }
