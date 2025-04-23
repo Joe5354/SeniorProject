@@ -474,7 +474,6 @@ function AllItemsList({ permissionData }) {
                 <Column field="catId"
                     header="Category"
                     sortable
-                    filter
                     body={(rowData) =>
                         editableDropdownCell("catId", cats, rowData, "catDesc", "catId")
                     }
@@ -484,8 +483,6 @@ function AllItemsList({ permissionData }) {
                     field="subCatId"
                     header="Subcategory"
                     sortable
-                    filter
-                    filterPlaceholder="Search"
                     body={(rowData) =>
                         editableDropdownCell(
                             "subCatId",

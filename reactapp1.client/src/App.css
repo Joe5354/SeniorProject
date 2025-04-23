@@ -432,3 +432,105 @@ input:focus,
     flex-direction: column; /* Ensure InputText is vertically aligned */
     justify-content: flex-start; /* Align the note field at the top */
 }
+
+
+
+
+
+.p-multiselect {
+    min-width: 250px;
+    max-width: 300px; /* optional */
+    margin: 0.5rem;
+    padding: 0.25rem; /* Reduce padding to improve alignment */
+    position: relative; /* Ensure positioning for inner elements */
+}
+
+.p-multiselect-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.p-multiselect-panel {
+    max-height: 300px; /* prevent it from growing too tall */
+    width: 150px !important;
+    font-size: 0.95rem;
+}
+
+/* Scrollable list container */
+.p-multiselect-items-wrapper {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* The list itself */
+.p-multiselect-items {
+    padding: 0;
+    margin: 0;
+}
+
+/* Individual options */
+.p-multiselect-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+    /* Hover effect */
+    .p-multiselect-item:hover {
+        background-color: #f1f1f1;
+    }
+
+.p-multiselect-panel .p-multiselect-header .p-multiselect-filter-container .p-inputtext {
+    height: 32px; /* Adjust height */
+    padding: 0.5rem; /* Reduce padding if necessary */
+    font-size: 0.9rem; /* Adjust font size */
+    line-height: 1.5; /* Adjust line height for better vertical alignment */
+}
+
+.p-multiselect-panel .p-multiselect-header {
+    display: flex;
+    padding: 0.5rem;
+    border-bottom: 0 none;
+    color: #495057;
+    background: #f8f9fa;
+    margin: 0;
+    border-top-right-radius: 2px;
+    border-top-left-radius: 2px;
+    height: 50px;
+    gap: 1rem; /* Adds space between items */
+}
+    /* Flexbox for filter container to align the filter icon properly */
+    .p-multiselect-panel .p-multiselect-header .p-multiselect-filter-container {
+        display: flex;
+        align-items: center; /* Vertically center the icon and input */
+        position: relative;
+    }
+
+    .p-multiselect-panel .p-multiselect-header .p-multiselect-filter-container .p-multiselect-filter-icon {
+        color: #6c757d;
+        margin: -0.5rem; /* Add margin to position the icon properly */
+        margin-left: 0.25rem;
+    }
+
+.p-multiselect input {
+    padding-top: 0.25rem; /* Adjust padding-top for better placeholder alignment */
+}
+
+.p-float-label {
+    position: relative; /* Ensure proper positioning */
+    margin-bottom: 0.75rem; /* Add space below the label */
+}
+.p-float-label label {
+    color: #6c757d;
+    line-height: 1.5;
+    font-size: 0.875rem; /* Adjust font size if necessary */
+    top: 0.25rem; /* Move the label up slightly */
+    left: 0.75rem; /* Adjust horizontal positioning */
+    pointer-events: none; /* Prevent label from blocking clicks */
+}
+    .p-float-label .p-multiselect:focus ~ label,
+    .p-float-label .p-multiselect:not(:placeholder-shown) ~ label {
+        top: -0.75rem; /* Move the label up when the input is focused or has a value */
+        font-size: 0.75rem; /* Adjust font size when label floats */
+        color: #495057; /* Change label color on focus */
+    }

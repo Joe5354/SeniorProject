@@ -9,6 +9,7 @@ import 'primeicons/primeicons.css';
 import CreateParNote from "./CreateParNote";
 import { MultiSelect } from 'primereact/multiselect';
 import { Checkbox } from 'primereact/checkbox';
+import { FloatLabel } from 'primereact/floatlabel';
 function NotesTable({ userId }) {
     const [notes, setNotes] = useState([]);
     const [editingRow, setEditingRow] = useState(null);
@@ -295,35 +296,53 @@ function NotesTable({ userId }) {
         <div className="p-4">
             <h1>Note List</h1>
             <div className="inline-flex items-center gap-2">
-                <MultiSelect
-                    value={selectedItems}
-                    onChange={(e) => setSelectedItems(e.value)}
-                    options={itemOptions}  // Use the itemOptions here
-                    placeholder="Select Item"
-                    display="chip"
-                />
-                <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
-            
-                <MultiSelect
-                    value={selectedRules}
-                    onChange={(e) => setSelectedRules(e.value)}
-                    options={ruleOptions}  // Use the itemOptions here
-                    placeholder="Select Rule"
-                    display="chip"
-                />
-                <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
-            
-                <MultiSelect
-                    value={selectedUsers}
-                    onChange={(e) => setSelectedUsers(e.value)}
-                    options={noteMakers}  // Use the itemOptions here
-                    placeholder="Select Users"
-                    display="chip"
-                />
-                <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
-            
-                <Checkbox inputId="activeOnly" checked={showOnlyActive} onChange={(e) => setShowOnlyActive(e.checked)} />
-                <label htmlFor="activeOnly">Only Active</label>
+                <div style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    gap: '1.5rem',
+                    padding: '1.5rem',
+                    marginBottom: '1.5rem',
+                    backgroundColor: '#fff',
+                    borderRadius: '1rem',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                }}>
+                 <FloatLabel className="w-full md:w-30rem">
+                    <MultiSelect
+                        value={selectedItems}
+                        onChange={(e) => setSelectedItems(e.value)}
+                        options={itemOptions}  // Use the itemOptions here
+                        placeholder="Select Item"
+                        display="chip"
+                        className="w-full md:w-20rem"
+                    />
+                    <label htmlFor="ms-items">Select Items</label>
+                    <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
+                </FloatLabel>
+                <FloatLabel className="w-full md:w-30rem">
+                    <MultiSelect
+                        value={selectedRules}
+                        onChange={(e) => setSelectedRules(e.value)}
+                        options={ruleOptions}  // Use the itemOptions here
+                        placeholder="Select Rule"
+                        display="chip"
+                        />
+                        <label htmlFor="ms-items">Select Rules</label>
+                    <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
+                </FloatLabel>
+                <FloatLabel className="w-full md:w-30rem">
+                    <MultiSelect
+                        value={selectedUsers}
+                        onChange={(e) => setSelectedUsers(e.value)}
+                        options={noteMakers}  // Use the itemOptions here
+                        placeholder="Select Users"
+                        display="chip"
+                    />
+                    <label htmlFor="ms-items">Select Users</label>
+                    <Button icon="pi pi-times" className="p-button-text p-button-sm" onClick={() => setSelectedItems([])} />
+                    </FloatLabel>
+                        <Checkbox inputId="activeOnly" checked={showOnlyActive} onChange={(e) => setShowOnlyActive(e.checked)} />
+                        <label htmlFor="ms-items"> Only Show Active Items</label>
             
             <Button
                 label="Create New Note"
@@ -336,12 +355,14 @@ function NotesTable({ userId }) {
                 onHide={() => setShowCreateDialog(false)}
                 onSuccess={handleNoteCreated}
                 userId={userId}
-            />
+                    />
+                </div>
              <div className="flex-container">
             <DataTable
                             value={filteredNotes}
                             paginator
-                            rows={5}
+                            rows={10}
+                            rowsPerPageOptions={[10, 20, 50]}
                             responsiveLayout="scroll"
                             dataKey="noteId"
                             filterDisplay="menu"
