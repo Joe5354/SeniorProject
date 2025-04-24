@@ -45,18 +45,18 @@ GO
 
 INSERT INTO ParRules (ParItemID, RuleName, [Description], ParValue, IsActive, CreatedByUser, OrderStatus)
 VALUES
-(1, 'Critical Low Stock - Laptops', 'Trigger when stock of laptops falls below 3 units. Priority reorder needed.', 3, 1, 1, 1),
-(2, 'Critical Low Stock - Monitors', 'Trigger when stock of monitors falls below 2 units. Priority reorder needed.', 2, 1, 2, 1),
-(3, 'Stock Below Threshold - Routers', 'Trigger when stock of routers falls below 5 units. Reorder to prevent disruption.', 5, 1, 3, 1),
-(4, 'Stock Below Threshold - Workstations', 'Trigger when stock of workstations falls below 5 units. Immediate reorder required.', 5, 1, 4, 1),
-(5, 'Critical Low Stock - Network Cables', 'Trigger when stock of network cables falls below 10 units. Reorder immediately to avoid shortages.', 10, 1, 5, 1);
+(1, 'Critical Low Stock - Laptops', 'Trigger when stock of laptops falls below 3 units.', 3, 1, 1, 1),
+(2, 'Critical Low Stock - Monitors', 'Trigger when stock of monitors falls below 2 units.', 2, 1, 2, 1),
+(3, 'Stock Below Threshold - Routers', 'Trigger when stock of routers falls below 5 units.', 5, 1, 3, 1),
+(4, 'Stock Below Threshold - Workstations', 'Trigger when stock of workstations falls below 5 units.', 5, 1, 4, 1),
+(5, 'Critical Low Stock - Network Cables', 'Trigger when stock of network cables falls below 10 units.', 10, 1, 5, 1);
 GO
 
 INSERT INTO ParNotes (ParItemID, RuleID, Note, CreatedByUser)
 VALUES
-(1, 1, 'Laptop stock is critically low, less than 3 units available. Immediate reorder required to prevent stockout.', 1),
-(2, 2, 'Monitor stock is below the threshold of 2 units. Reorder immediately to ensure availability for workstations.', 2),
-(3, 3, 'Router stock is critically low (below 5 units). Immediate reorder required to avoid network disruptions.', 3),
-(4, 4, 'Workstation stock is below 5 units. Reorder immediately to maintain workstation availability for staff.', 4),
-(5, 5, 'Network cable stock has fallen below 10 units. Reorder immediately to ensure enough cables for network setups.', 5);
+(1, 1, 'Laptop stock has less than 3 units available.', 1),
+(2, 2, 'Monitor stock is below 2 units.', 2),
+(3, 3, 'Router stock is below 5 units.', 3),
+(4, 4, 'Workstation stock is below 5 units.', 4),
+(5, 5, 'Network cable stock has fallen below 10 units.', 5);
 GO
