@@ -34,7 +34,7 @@ VALUES
 (5, 4, 'Keyboards', 'Wired and Wireless Keyboards');
 GO
 
-  --I literally cannot figure out why this wont disaply like this
+  --I literally cannot figure out why this wont display like this, why does the second one map to id 1?
 INSERT INTO Items (ItemID, ProductID, SerialNumber, Barcode, TotalCount, CatID, SubCatID, ConditionStatus, WorkflowStage, CurrentResponsibleUserID)
 VALUES
 (1, 1, 'SN1001', 'BC1001', 5, 1, 1, 'New', 'In Stock', 1),
