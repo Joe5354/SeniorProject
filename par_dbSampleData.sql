@@ -34,11 +34,12 @@ VALUES
 (5, 4, 'Keyboards', 'Wired and Wireless Keyboards');
 GO
 
+  --I literally cannot figure out why this wont disaply like this
 INSERT INTO Items (ItemID, ProductID, SerialNumber, Barcode, TotalCount, CatID, SubCatID, ConditionStatus, WorkflowStage, CurrentResponsibleUserID)
 VALUES
-(1, 1, 'SN1001', 'BC1001', 50, 1, 1, 'New', 'In Stock', 1),
-(2, 2, 'SN1002', 'BC1002', 30, 1, 2, 'Used', 'In Stock', 2),
-(3, 3, 'SN2001', 'BC2001', 15, 2, 3, 'New', 'In Stock', 3),
+(1, 1, 'SN1001', 'BC1001', 5, 1, 1, 'New', 'In Stock', 1),
+(2, 2, 'SN1002', 'BC1002', 7, 1, 2, 'Used', 'In Stock', 2),
+(3, 3, 'SN2001', 'BC2001', 12, 2, 3, 'New', 'In Stock', 3),
 (4, 4, 'SN3001', 'BC3001', 5, 3, 4, 'New', 'In Stock', 1),
 (5, 5, 'SN4001', 'BC4001', 8, 3, 5, 'Used', 'In Stock', 2);
 GO
