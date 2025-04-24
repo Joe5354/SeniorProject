@@ -59,6 +59,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Populate Items table on startup
+using (var scope = app.Services.CreateScope())
+{
+    var Idealcontroller = scope.ServiceProvider.GetRequiredService<IdealInventoryViewController>();
+    var idealContext = scope.ServiceProvider.GetRequiredService<IdealDbContext>();
+    // Run the PopulateItems function
+    List<VwItemInventory> invItems = await idealContext.VwItemInventories.ToListAsync();
+    foreach (var idealItem in invItems) 
+    { 
+        await Idealcontroller.PushItem(idealItem.ItemId, idealItem);
+    }
+}
+
 app.UseRouting();
 app.UseHttpsRedirection();
 app.UseAuthorization();
