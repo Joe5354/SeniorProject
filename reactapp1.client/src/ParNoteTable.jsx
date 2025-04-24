@@ -10,6 +10,7 @@ import CreateParNote from "./CreateParNote";
 import { MultiSelect } from 'primereact/multiselect';
 import { Checkbox } from 'primereact/checkbox';
 import { FloatLabel } from 'primereact/floatlabel';
+import { Dialog } from 'primereact/dialog';
 function NotesTable({ userId }) {
     const [notes, setNotes] = useState([]);
     const [editingRow, setEditingRow] = useState(null);
@@ -26,7 +27,8 @@ function NotesTable({ userId }) {
     const [showOnlyActive, setShowOnlyActive] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [selectedRules, setSelectedRules] = useState([]);
-
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [noteToDelete, setNoteToDelete] = useState(null);
 
     const getRule = (ruleId) => {
         const rule = rules.find(r => r.ruleId === ruleId);
@@ -100,6 +102,38 @@ function NotesTable({ userId }) {
             .then((res) => res.json())
             .then((data) => setUsers(data))
             .catch((error) => console.error("Error fetching notes:", error));
+    };
+
+
+    const deleteNote = () => {
+        if (noteToDelete) {
+            fetch(`https://localhost:7245/api/ParNote/${noteToDelete}`, {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (response.ok) {
+                        setNotes(prevNotes => prevNotes.filter(note => note.noteId !== noteToDelete));
+                        setShowDeleteDialog(false);  // Close the dialog
+                    } else {
+                        alert("Failed to delete note");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error deleting note:", error);
+                    alert("Error deleting note");
+                });
+        }
+    };
+
+    // Cancel the deletion action
+    const cancelDelete = () => {
+        setShowDeleteDialog(false); // Close the dialog without deleting
+        setNoteToDelete(null);
+    };
+
+    const handleDeleteNote = (noteId) => {
+        setNoteToDelete(noteId);  // Store the noteId for deletion
+        setShowDeleteDialog(true); // Show the confirmation dialog
     };
 
     useEffect(() => {
@@ -398,8 +432,27 @@ function NotesTable({ userId }) {
                             </>
                         ) : null
                     )}
-                    style={{ width: "6rem" }}
+                            style={{ width: "3rem" }}
+
                 />
+                        <Column
+                            body={(rowData) => {
+                                // Find the current user from the users array
+                                const currentUser = users.find(user => Number(user.userId) === Number(userId));
+                                if (currentUser && (currentUser.userRoleId === 1 || rowData.createdByUser === Number(userId))) {
+                                    return (
+                                        <Button
+                                            icon="pi pi-trash"
+                                            className="p-button-danger"
+                                            onClick={() => handleDeleteNote(rowData.noteId)}  // Pass the noteId to handleDeleteNote
+                                        />
+                                    );
+                                }
+
+                                return null;  // Don't show the button if the user isn't allowed to delete
+                            }}
+                            style={{ width: "3rem" }}
+                        />
                 </DataTable>
                 {selectedRow && (
                             <div className="selected-note-container">
@@ -412,7 +465,23 @@ function NotesTable({ userId }) {
                         />
                     </div>
                         )}
-            </div>
+                </div>
+                {/* Confirmation Dialog */}
+                <Dialog
+                    visible={showDeleteDialog}
+                    style={{ width: '450px' }}
+                    header="Confirm Deletion"
+                    modal
+                    footer={
+                        <div>
+                            <Button label="No" icon="pi pi-times" onClick={cancelDelete} className="p-button-text" />
+                            <Button label="Yes" icon="pi pi-check" onClick={deleteNote} autoFocus />
+                        </div>
+                    }
+                    onHide={cancelDelete}
+                >
+                    <p>Are you sure you want to delete this note?</p>
+                </Dialog>
             </div>
         </div>
     );

@@ -62,11 +62,17 @@ function ReportPage() {
         }
     };
 
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+        const date = new Date(dateString);
+        return date.toLocaleDateString();
+    };
+
     const exportCSV = () => {
         const data = getReportData();
 
         const headers = [
-            'Product ID',
+            'Product Name',
             'Category Description',
             'Subcategory Description',
             'Serial Number',
@@ -79,27 +85,29 @@ function ReportPage() {
             'Is Total Count Less Than PAR Value'
         ];
 
-        // Convert JSON data to CSV
-        const rows = data.map((item) => [
-            item.productId,
-            item.catDesc,
-            item.subCatDesc,
-            item.serialNumber,
-            item.totalCount || '',
-            item.ruleId || '',
-            item.description || '',
-            item.parValue || '',
-            item.dateCreated || '',
-            item.isActive !== null ? item.isActive : '',
-            item.isTotalCountLessThanParValue || ''
-        ]);
+        const rows = data.map((item) => {
+            const product = products.find(p => p.productId === item.productId);
+            const productName = product ? product.name : 'Unknown Product';
 
-        // Add headers to the beginning of the rows array
+            return [
+                productName,
+                item.catDesc,
+                item.subCatDesc,
+                item.serialNumber,
+                item.totalCount || '',
+                item.ruleId || '',
+                item.description || '',
+                item.parValue || '',
+                formatDate(item.dateCreated),
+                item.isActive !== null ? item.isActive : '',
+                item.isTotalCountLessThanParValue || ''
+            ];
+        });
+
         const csvContent = [headers, ...rows]
             .map((row) => row.join(','))
             .join('\n');
 
-        // Create a blob and download the file
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -107,17 +115,6 @@ function ReportPage() {
         link.setAttribute('download', 'report.csv');
         link.click();
     };
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -178,7 +175,7 @@ function ReportPage() {
                     scrollHeight="400px"
                     stripedRows
                 >
-                    <Column field="productId" header="Product ID" style={{ width: '150px' }} />
+                    <Column field="productId" header="Product ID" body={(rowData) => { const product = products.find(p => p.productId === rowData.productId); return product ? product.name : "Unknown Product"; }} style={{ width: '150px' }} />
                     <Column field="catDesc" header="Category Description" style={{ width: '200px' }} />
                     <Column field="subCatDesc" header="Subcategory Description" style={{ width: '200px' }} />
                     <Column field="serialNumber" header="Serial Number" style={{ width: '200px' }} />
@@ -186,7 +183,12 @@ function ReportPage() {
                     <Column field="ruleId" header="Rule ID" style={{ width: '150px' }} />
                     <Column field="description" header="Description" style={{ width: '250px' }} />
                     <Column field="parValue" header="PAR Value" style={{ width: '150px' }} />
-                    <Column field="dateCreated" header="Date Created" style={{ width: '200px' }} />
+                    <Column
+                        field="dateCreated"
+                        header="Date Created"
+                        style={{ width: '200px' }}
+                        body={(rowData) => formatDate(rowData.dateCreated)}
+                    />
                     <Column field="isActive" header="Is Active" style={{ width: '150px' }} />
                     <Column field="isTotalCountLessThanParValue" header="Is Total Count Less Than PAR Value" style={{ width: '250px' }} />
                 </DataTable>

@@ -404,7 +404,7 @@ function AllItemsList({ permissionData }) {
                     {/* TotalCount Filter */}
                     <Dropdown
                         value={selectedCountFilter}
-                        options={totalCountOptions.map(opt => ({ label: opt === 'null' ? 'Null' : 'Not Null', value: opt }))}
+                    options={totalCountOptions.map(opt => ({ label: opt === 'null' ? 'Item is Serialized' : 'Item not Serialized', value: opt }))}
                         onChange={(e) => setSelectedCountFilter(e.value)}
                         placeholder="Filter by Total Count"
                         className="w-60"

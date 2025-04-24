@@ -10,7 +10,7 @@ import { Checkbox } from 'primereact/checkbox';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-
+import { InputNumber } from 'primereact/inputnumber';
 import { FloatLabel } from 'primereact/floatlabel';
 function RulesList({ userData, createRule, editRule }) {
     //tabular data
@@ -187,32 +187,12 @@ function RulesList({ userData, createRule, editRule }) {
 
 
 
-
-
-
-    // Clear Filters
-
-    const clearItemFilter = () => {
-    setFilters(prev => ({ ...prev, selectedItems: null }));
-    };
-
-    const clearMakerFilter = () => {
-        setFilters(prev => ({ ...prev, selectedMakers: null }));
-    };
-
-    const clearActiveFilter = () => {
-        setFilters(prev => ({ ...prev, isActive: null }));
-    };
-
     const clearFilters = () => {
-        setFilters({
-            isActive: null,
-            selectedItems: null,
-            selectedMakers: null
-        });
+        setSelectedItems([]);
+        setShowOnlyActive(false);
+        setSelectedUsers([]);
         setFilteredRules(rules); // Reset to show all rules
     };
-
 
 
 
@@ -398,13 +378,30 @@ function RulesList({ userData, createRule, editRule }) {
         return found ? found[labelField] : rowData[field];
     };
 
+    const editableNumberInputCell = (field, rowData, handleEditChange, min, editingRowId) => {
+        // Check if the row is being edited
+        if (editingRowId === rowData.ruleId) {
+            return (
+                <InputNumber
+                    value={editedRule[field]}  // Bind the value to the edited rule
+                    onValueChange={(e) => handleEditChange(e, field)}  
+                    min={min}  
+                    showButtons
+                    step={1}  
+                    buttonLayout="horizontal"
+                    placeholder="Enter value"
+                    style={{
+                        width: '80px',  // Make the input box smaller
+                        fontSize: '14px',  // Smaller text
+                        padding: '5px',  // Add padding inside the input
+                    }}
+                    className="p-inputnumber-sm"  // Use PrimeReact's small size class
+                />
+            );
+        }
 
-
-    const clearAllFilters = () => {
-        setSelectedItems([]); // Clear selected items filter
-        setShowOnlyActive(false); // Uncheck "Only Active" checkbox
-        setSelectedUsers([]); // Clear selected users filter
-        setFilteredRules(rules); // Reset filtered rules to show all rules
+        // When not editing, just display the value as it is
+        return rowData[field];
     };
 
     //The Display:::::::
@@ -474,7 +471,7 @@ function RulesList({ userData, createRule, editRule }) {
                     label="Clear All"
                     icon="pi pi-filter-slash"
                     className="p-button-secondary p-button-sm"
-                    onClick={clearAllFilters}
+                    onClick={clearFilters}
                 />
                 {userData?.userId && createRule && (
                     <Button
@@ -519,7 +516,8 @@ function RulesList({ userData, createRule, editRule }) {
                     field="parValue"
                     header="Par Value"
                     sortable
-                    style={{width: '50px'}}
+                    style={{ width: '50px' }}
+                    body={(rowData) => editableNumberInputCell('parValue', rowData, handleEditChange, 0, editingRowId)}  
                 />
                 <Column
                     field="createdByUser"

@@ -66,7 +66,7 @@ function App() {
         ...(roleData?.editUser ? [{ label: "Users", icon: "pi pi-users", command: () => setSelectedPage("users") }] : []),
         { label: "Notes", icon: "pi pi-file-edit", command: () => setSelectedPage("notes") },
         { label: "Reports", icon: "pi pi-file", command: () => setSelectedPage("reports") },
-        { label: "Logout", icon: "pi pi-sign-out", command: () => handleLogout() }
+        { label: "Logout", icon: "pi pi-sign-out", command: () => handleLogout() },
     ];
 
 
