@@ -1,54 +1,128 @@
 import React, { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Checkbox } from 'primereact/checkbox';
 import { Button } from "primereact/button";
 import { Dropdown } from 'primereact/dropdown';
-import { MultiSelect } from 'primereact/multiselect';
-
 import { FloatLabel } from 'primereact/floatlabel';
 
-function AllItemsList({ permissionData }) {
-
+function ReportPage() {
     const [allItemsRulePar, setAllItemsRulePar] = useState([]);
     const [onlyItemsRuleBelowPar, setOnlyItemsRuleBelowPar] = useState([]);
-    const [onlyItemsHasRulePar, setOInlyItemsHasRulePar] = useState([]);
-
-    const [selectedReport, setSelectedReport] = useState([]);
-
+    const [onlyItemsHasRulePar, setOnlyItemsHasRulePar] = useState([]);
+    const [selectedReport, setSelectedReport] = useState(null);
     const [products, setProducts] = useState([]);
 
-    const [selectedReports, setProducts] = useState([]);
-
+    const reportChoices = [
+        { code: 1, description: "All Items, their Rules (if any) and Par Values (if any)" },
+        { code: 2, description: "Only Items with Rules and their Par Value" },
+        { code: 3, description: "Only items Below Par" }
+    ];
 
     useEffect(() => {
         fetch("https://localhost:7245/api/Product")
-            .then((response) => {
-                if (!response.ok) throw new Error("Failed to fetch products");
-                return response.json();
+            .then(res => {
+                if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
+                return res.json();
             })
-            .then((data) => {
-                setItems(data);
-                setFilteredItems(data);
-            })
-            .catch((error) => console.error("Error fetching ptoducts:", error));
+            .then(setProducts)
+            .catch(err => console.error("Error fetching products:", err));
 
+        fetch("https://localhost:7245/api/allitemsandpar")
+            .then(res => {
+                if (!res.ok) throw new Error(`Failed to fetch allitemsandpar: ${res.status}`);
+                return res.json();
+            })
+            .then(setAllItemsRulePar)
+            .catch(err => console.error("Error fetching allitemsandpar:", err));
+
+        fetch("https://localhost:7245/api/belowparitemandrule")
+            .then(res => {
+                if (!res.ok) throw new Error(`Failed to fetch belowparitemandrule: ${res.status}`);
+                return res.json();
+            })
+            .then(setOnlyItemsRuleBelowPar)
+            .catch(err => console.error("Error fetching belowparitemandrule:", err));
+
+        fetch("https://localhost:7245/api/onlyitemswithruleandpar")
+            .then(res => {
+                if (!res.ok) throw new Error(`Failed to fetch onlyitemswithruleandpar: ${res.status}`);
+                return res.json();
+            })
+            .then(setOnlyItemsHasRulePar)
+            .catch(err => console.error("Error fetching onlyitemswithruleandpar:", err));
     }, []);
 
-
-    const getProductName = (parItemId) => {
-        const item = items.find(i => i.parItemId === parItemId);
-        if (item) {
-            const product = products.find(p => p.productId === item.productId);
-            return product ? product.name : "No Product Name";
+    const getReportData = () => {
+        if (!selectedReport) return [];
+        switch (selectedReport.code) {
+            case 1: return allItemsRulePar;
+            case 2: return onlyItemsHasRulePar;
+            case 3: return onlyItemsRuleBelowPar;
+            default: return allItemsRulePar;
         }
-        return "No Product Name";
     };
+
+    const exportCSV = () => {
+        const data = getReportData();
+
+        const headers = [
+            'Product ID',
+            'Category Description',
+            'Subcategory Description',
+            'Serial Number',
+            'Total Count',
+            'Rule ID',
+            'Description',
+            'PAR Value',
+            'Date Created',
+            'Is Active',
+            'Is Total Count Less Than PAR Value'
+        ];
+
+        // Convert JSON data to CSV
+        const rows = data.map((item) => [
+            item.productId,
+            item.catDesc,
+            item.subCatDesc,
+            item.serialNumber,
+            item.totalCount || '',
+            item.ruleId || '',
+            item.description || '',
+            item.parValue || '',
+            item.dateCreated || '',
+            item.isActive !== null ? item.isActive : '',
+            item.isTotalCountLessThanParValue || ''
+        ]);
+
+        // Add headers to the beginning of the rows array
+        const csvContent = [headers, ...rows]
+            .map((row) => row.join(','))
+            .join('\n');
+
+        // Create a blob and download the file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'report.csv');
+        link.click();
+    };
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     return (
         <div className="parent-container">
-
             <div style={{
                 display: 'flex',
                 flexWrap: 'wrap',
@@ -60,47 +134,65 @@ function AllItemsList({ permissionData }) {
                 borderRadius: '1rem',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
             }}>
-                <h1>Item List</h1>
-                <FloatLabel className="w-full md:w-30rem">
+                <h1>Select A Report</h1>
                     <Dropdown
-                        value={selectedReport}
-                        options={reportOptions}
-                        onChange={(e) => setSelectedReport(e.value)}
-                        placeholder="Filter by Categories"
+                        inputId="report-type"
+                        value={selectedReport?.code}
+                        options={reportChoices}
+                        onChange={(e) => {
+                            const selected = reportChoices.find(r => r.code === e.value);
+                            setSelectedReport(selected);
+                        }}
+                        optionLabel="description"
+                        optionValue="code"
+                        placeholder="Select Report Type"
                         className="w-60"
-                        display="chip"
                     />
-                    <label htmlFor="ms-items">Select Report Type</label>
-                    {selectedCategories.length > 0 && (
-                        <Button
-                            icon="pi pi-times"
-                            className="p-button-text p-button-sm"
-                            onClick={() => setSelectedReport([])}
-                            tooltip="Clear Category filter"
-                        />)}
-                </FloatLabel>
-                />
-            </div>
+                {selectedReport && (
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-text p-button-sm"
+                        onClick={() => setSelectedReport(null)}
+                        tooltip="Clear Report Selection"
+                    />
 
+                )}
+                {selectedReport && (
+                <Button
+                    label="Export to CSV"
+                    icon="pi pi-download"
+                    onClick={exportCSV}
+                    style={{ marginBottom: '10px' }}
+                />)}
+                
+            </div>
 
             <div className="datatable-container">
                 <DataTable
-                    value={selectedReport}
+                    value={getReportData()}
                     paginator
                     rows={10}
                     rowsPerPageOptions={[10, 20, 50]}
                     responsiveLayout="scroll"
-                    dataKey="parItemId"
                     scrollable
                     scrollHeight="400px"
                     stripedRows
                 >
-                    <Column field="productId" header="Product Name" sortable body={(rowData) => getProductName(rowData.parItemId)} style={{ width: '350px' }} />
-                    
+                    <Column field="productId" header="Product ID" style={{ width: '150px' }} />
+                    <Column field="catDesc" header="Category Description" style={{ width: '200px' }} />
+                    <Column field="subCatDesc" header="Subcategory Description" style={{ width: '200px' }} />
+                    <Column field="serialNumber" header="Serial Number" style={{ width: '200px' }} />
+                    <Column field="totalCount" header="Total Count" style={{ width: '150px' }} />
+                    <Column field="ruleId" header="Rule ID" style={{ width: '150px' }} />
+                    <Column field="description" header="Description" style={{ width: '250px' }} />
+                    <Column field="parValue" header="PAR Value" style={{ width: '150px' }} />
+                    <Column field="dateCreated" header="Date Created" style={{ width: '200px' }} />
+                    <Column field="isActive" header="Is Active" style={{ width: '150px' }} />
+                    <Column field="isTotalCountLessThanParValue" header="Is Total Count Less Than PAR Value" style={{ width: '250px' }} />
                 </DataTable>
             </div>
         </div>
     );
 }
 
-export default AllItemsList;
+export default ReportPage;

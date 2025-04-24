@@ -8,7 +8,7 @@ function UserData({ userId, onPermissionsFetched }) {
     const [previousUserId, setPreviousUserId] = useState(null); // Track previous userId
 
     useEffect(() => {
-        if (!userId || userId === previousUserId) return; // Skip fetch if userId is the same or falsy
+        if (!userId || userId === previousUserId) return; // Skip fetch if userId is the same or null
         setLoading(true); // Start loading
         setError(null); // Reset error state before fetching data
         setUserData(null); // Reset userData before fetch
@@ -22,6 +22,13 @@ function UserData({ userId, onPermissionsFetched }) {
                     throw new Error("User not found");
                 }
                 const userData = await userResponse.json();
+
+                // Check if user is active
+                if (!userData.isActive) {
+                    setError("User is not active.");
+                    return; // Stop further execution if user is not active
+                }
+
                 setUserData(userData); // Store user data
 
                 // Fetch role data based on user's roleId
