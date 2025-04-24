@@ -93,3 +93,17 @@ CREATE TABLE ParNotes (
 	FOREIGN KEY (RuleID) REFERENCES ParRules(RuleID),
     FOREIGN KEY (CreatedByUser) REFERENCES Users(UserID)
 );
+
+SELECT 
+    i.ItemID,
+    i.SerialNumber,
+    i.TotalCount,
+    i.ConditionStatus,
+    i.WorkflowStage,
+    i.CurrentResponsibleUserID,
+    p.Name AS ProductName
+FROM 
+    Items i
+JOIN 
+    IDEALDB.dbo.Products p ON i.ProductID = p.ProductID;
+
