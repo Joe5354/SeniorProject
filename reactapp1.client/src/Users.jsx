@@ -14,12 +14,12 @@ import 'primeicons/primeicons.css';
 
 import { FloatLabel } from 'primereact/floatlabel';
 
-function UsersList({editUser, createUser }) { //make a .jsx file in /src labeled Items
-    const [users, setUsers] = useState([]); //<-- create/set table to be displayed on the web page
+function UsersList({editUser, createUser }) { 
+    const [users, setUsers] = useState([]); 
     const [roles, setRoles] = useState([]);
-    const [showCreateUserDialog, setShowCreateUserDialog] = useState(false); // Dialog state
-    const [editingRowId, setEditingRowId] = useState(null);  // Track the userId of the row being edited
-    const [editedUser, setEditedUser] = useState(null);  // Store edited user
+    const [showCreateUserDialog, setShowCreateUserDialog] = useState(false); 
+    const [editingRowId, setEditingRowId] = useState(null);  
+    const [editedUser, setEditedUser] = useState(null);  
     const toast = useRef(null);
 
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -93,8 +93,7 @@ function UsersList({editUser, createUser }) { //make a .jsx file in /src labeled
             .then((data) => setUsers(data))
             .catch((error) => console.error("Error fetching items:", error));
         fetchRoles();
-    }, []); // Runs once on mount
-    //Green/Red box for Active/ Inactive on IsActive (bit) column
+    }, []); 
     const statusTemplate = (rowData) => {
         return (
             <span className={`status-badge ${rowData.isActive ? 'status-active' : 'status-inactive'}`}>
@@ -121,7 +120,6 @@ function UsersList({editUser, createUser }) { //make a .jsx file in /src labeled
                 if (toast.current) {
                     toast.current.show({
                         severity: 'error',
-                        summary: 'Error',
                         summary: 'Error',
                         detail: 'Failed to fetch users: ' + error.message,
                         life: 3000
@@ -185,13 +183,12 @@ function UsersList({editUser, createUser }) { //make a .jsx file in /src labeled
                 if (contentType && contentType.includes("application/json")) {
                     return await res.json();
                 } else {
-                    return {}; // safely handle empty response
+                    return {}; 
                 }
             })
             .then((data) => {
                 console.log("user updated:", data);
 
-                // Reset editing mode
                 setEditingRowId(null);
                 setEditedUser(null);
 

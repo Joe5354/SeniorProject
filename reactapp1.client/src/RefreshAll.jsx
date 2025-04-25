@@ -40,7 +40,7 @@ const RefreshAll = () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(item), // Sending updated item data
+                    body: JSON.stringify(item), 
                 });
 
                 if (!response.ok) {

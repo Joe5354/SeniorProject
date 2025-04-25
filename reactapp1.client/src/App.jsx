@@ -48,7 +48,8 @@ function App() {
 
 
 
-
+    
+    console.log(userId);
     function Header() {
         return (
             <header className="app-header">
@@ -92,6 +93,7 @@ function App() {
             {/* Once logged in, show full dashboard */}
             {userDetails && roleData && (
                 <>
+                    {console.log("CAN SEE PAR ALERTS??", roleData.seeAlerts)}
                     {roleData.seeAlerts === true && <ParAlert />}
                     <Header />
                     <Menubar

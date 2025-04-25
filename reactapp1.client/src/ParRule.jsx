@@ -60,7 +60,7 @@ function RulesList({ userData, createRule, editRule }) {
                 setRules(data);
                 setFilteredRules(data);
                 setLoading(false);
-                fetchUsers(data); // pass rules directly
+                fetchUsers(data);
             })
             .catch((error) => {
                 console.error("Error fetching rules:", error);
@@ -83,7 +83,7 @@ function RulesList({ userData, createRule, editRule }) {
             if (!response.ok) throw new Error("Failed to fetch");
 
             const data = await response.json();
-            setProducts(data); // or whatever state setter you're using
+            setProducts(data); 
             console.log("Fetched product data:", data);
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -266,7 +266,7 @@ function RulesList({ userData, createRule, editRule }) {
                 if (contentType && contentType.includes("application/json")) {
                     return await res.json();
                 } else {
-                    return {}; // safely handle empty response
+                    return {};
                 }
             })
             .then((data) => {
@@ -276,7 +276,6 @@ function RulesList({ userData, createRule, editRule }) {
                 setEditingRowId(null);
                 setEditedRule(null);
 
-                // Optionally, refresh the rules list or show success toast
                 fetchRules();
                 if (toast.current) {
                     toast.current.show({
@@ -391,11 +390,11 @@ function RulesList({ userData, createRule, editRule }) {
                     buttonLayout="horizontal"
                     placeholder="Enter value"
                     style={{
-                        width: '80px',  // Make the input box smaller
-                        fontSize: '14px',  // Smaller text
-                        padding: '5px',  // Add padding inside the input
+                        width: '80px',  
+                        fontSize: '14px',  
+                        padding: '0px', 
                     }}
-                    className="p-inputnumber-sm"  // Use PrimeReact's small size class
+                    className="par-value-input" 
                 />
             );
         }
@@ -426,7 +425,7 @@ function RulesList({ userData, createRule, editRule }) {
                     <MultiSelect
                         value={selectedItems}
                         onChange={(e) => setSelectedItems(e.value)}
-                        options={items.length && products.length ? itemOptions : []}  // Only render options when data is available
+                        options={items.length && products.length ? itemOptions : []} 
                         placeholder="Select Item"
                         display="chip"
                     />
@@ -452,7 +451,7 @@ function RulesList({ userData, createRule, editRule }) {
                 <FloatLabel className="w-full md:w-30rem">
                     <MultiSelect
                         value={selectedUsers}
-                        options={ruleMakers}  // Use the ruleMakers here
+                        options={ruleMakers}  
                         onChange={(e) => setSelectedUsers(e.value)}
                         placeholder="Filter by Created By"
                         className="w-60"
@@ -490,7 +489,7 @@ function RulesList({ userData, createRule, editRule }) {
             </div>
             <div className = "datatable-container">
             <DataTable
-                value={filteredRules.length > 0 ? filteredRules : rules}  // Show filtered or all rules
+                value={filteredRules.length > 0 ? filteredRules : rules}  
                 paginator
                 rows={15}
                 rowsPerPageOptions={[15, 25, 50]}
@@ -503,33 +502,35 @@ function RulesList({ userData, createRule, editRule }) {
                     field="ruleName"
                     header="Rule Name"
                     sortable
-                    style={{ width: '90px' }}
+                    style={{ width: '200px' }}
                     body={(rowData) => `${rowData.ruleName} ID: ${rowData.ruleId}`}
                 />
                 <Column
                     field="parItemId"
                     header="Product Name"
                     sortable
-                    style={{ width : '500px' }}
+                    style={{ width : '200px' }}
                     body={(rowData) => getProductName(rowData.parItemId)} />
                 <Column
                     field="parValue"
                     header="Par Value"
                     sortable
-                    style={{ width: '50px' }}
+                    style={{ width: '100px' }}
                     body={(rowData) => editableNumberInputCell('parValue', rowData, handleEditChange, 0, editingRowId)}  
                 />
                 <Column
                     field="createdByUser"
                     header="Created By"
                     body={(rowData) => getUserName(rowData.createdByUser)}
-                    sortable
+                        sortable
+                        style={{ width: '100px' }}
                 />
                 <Column
                     field="dateCreated"
                     header="Date Created"
                     sortable
-                    body={(rowData) => formatDate(rowData.dateCreated)}
+                        body={(rowData) => formatDate(rowData.dateCreated)}
+                        style={{ width: '100px' }}
                 />
                 <Column
                     field="isActive"
@@ -538,6 +539,7 @@ function RulesList({ userData, createRule, editRule }) {
                     body={(rowData) =>
                         editableDropdownCell("isActive", statusOptions, rowData, "label", "code")
                     }
+                    style={{ width: '100px' }}
                 />
                 {editRule && (
                 <Column

@@ -20,17 +20,14 @@ function CreateParRule({ visible, onHide, onSuccess, userData }) {
     const [parItemId, setParItemId] = useState(null);
     const [isActive, setIsActive] = useState(true);
 
-    // Debugging state
     const [apiError, setApiError] = useState(null);
 
-    // Fetch items when component mounts
     useEffect(() => {
         const fetchData = async () => {
             try {
                 setLoading(true);
                 console.log("Fetching data...");
 
-                // Fetch items
                 const itemsResponse = await fetch("https://localhost:7245/api/Item");
                 if (!itemsResponse.ok) {
                     throw new Error("Failed to fetch items");
@@ -40,7 +37,6 @@ function CreateParRule({ visible, onHide, onSuccess, userData }) {
 
                 setItems(itemsData);
 
-                // Set default values
                 if (itemsData.length > 0) {
                     setParItemId(itemsData[0].parItemId);
                 }
@@ -123,20 +119,18 @@ function CreateParRule({ visible, onHide, onSuccess, userData }) {
                 return;
             }
 
-            // Prepare rule data
             const ruleData = {
                 ruleName: ruleName.trim(),
                 description: description.trim() || null,
                 parValue,
                 parItemId,
                 isActive,
-                createdByUser: userData.userId, // Use the logged-in user's ID from App
+                createdByUser: userData.userId, 
                 dateCreated: new Date().toISOString()
             };
 
             console.log("Sending request with data:", ruleData);
 
-            // Send POST request to create rule
             const response = await fetch("https://localhost:7245/api/ParRule", {
                 method: "POST",
                 headers: {
@@ -147,31 +141,26 @@ function CreateParRule({ visible, onHide, onSuccess, userData }) {
 
             console.log("Response status:", response.status);
 
-            // Check if response is OK
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error("Server error:", errorText);
                 throw new Error(`Failed to create rule: ${response.status} ${errorText}`);
             }
 
-            // Parse response to get created rule
             const createdRule = await response.json();
             console.log("Rule created successfully:", createdRule);
 
-            // Show success message
             toastRef.current.show({
                 severity: "success",
                 summary: "Success",
                 detail: "Rule created successfully"
             });
 
-            // Call onSuccess callback with the new rule
             if (onSuccess) {
                 console.log("Calling onSuccess callback");
                 onSuccess(createdRule);
             }
 
-            // Close dialog
             if (onHide) {
                 console.log("Calling onHide callback");
                 onHide();

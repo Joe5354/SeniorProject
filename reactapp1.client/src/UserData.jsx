@@ -16,22 +16,18 @@ function UserData({ userId, onPermissionsFetched }) {
 
         async function fetchUserData() {
             try {
-                // Fetch user data
                 const userResponse = await fetch(`https://localhost:7245/api/user/${userId}`);
                 if (!userResponse.ok) {
                     throw new Error("User not found");
                 }
                 const userData = await userResponse.json();
 
-                // Check if user is active
                 if (!userData.isActive) {
                     setError("User is not active.");
-                    return; // Stop further execution if user is not active
                 }
 
-                setUserData(userData); // Store user data
+                setUserData(userData); 
 
-                // Fetch role data based on user's roleId
                 const roleResponse = await fetch(`https://localhost:7245/api/userrole/${userData.userRoleId}`);
                 if (!roleResponse.ok) {
                     throw new Error("Role permissions not found");
@@ -40,30 +36,29 @@ function UserData({ userId, onPermissionsFetched }) {
                 console.log("Role data fetched:", roleData);
                 setUserRolePermissions(roleData);
 
-                // Pass both user data and role permissions data to App.jsx via callback
                 if (onPermissionsFetched) {
-                    onPermissionsFetched(roleData, userData); // Pass both roleData and userData
+                    onPermissionsFetched(roleData, userData); 
                 }
 
                 localStorage.setItem('userId', userData.userId);
                 localStorage.setItem('userRoleId', userData.userRoleId);
-                setPreviousUserId(userId); // Set previousUserId after fetching
+                setPreviousUserId(userId); 
             } catch (error) {
                 setError(error.message);
                 if (onPermissionsFetched) {
-                    onPermissionsFetched(null, null); // signal error/reset
+                    onPermissionsFetched(null, null); 
                 }
             } finally {
-                setLoading(false); // Set loading state to false after fetching
+                setLoading(false); 
             }
         }
 
-        fetchUserData(); // Call the function to fetch user data
+        fetchUserData(); 
 
-    }, [userId, onPermissionsFetched, previousUserId]); // Add previousUserId to dependencies
+    }, [userId, onPermissionsFetched, previousUserId]); 
 
     if (loading) {
-        return <div>Loading...</div>; // Show loading while fetching
+        return <div>Loading...</div>; 
     }
 
     if (error) {
@@ -71,7 +66,7 @@ function UserData({ userId, onPermissionsFetched }) {
     }
 
     if (!userData || !userRolePermissions) {
-        return <div>No data available</div>; // Fallback when data is not available
+        return <div>No data available</div>; 
     }
 
     return null;

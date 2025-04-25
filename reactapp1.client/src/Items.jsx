@@ -75,9 +75,9 @@ function AllItemsList({ permissionData }) {
         let result = [...items];
 
         if (selectedCountFilter === 'null') {
-            result = result.filter(i => i.totalCount === null);
+            result = result.filter(i => i.serialNumber === null);
         } else if (selectedCountFilter === '!null') {
-            result = result.filter(i => i.totalCount !== null);
+            result = result.filter(i => i.serialNumber !== null);
         }
 
         if (selectedProducts.length > 0) {
@@ -151,7 +151,7 @@ function AllItemsList({ permissionData }) {
                 if (!response.ok) {
                     throw new Error("Failed to update items");
                 }
-                return response.json(); // Assuming this returns updated items
+                return response.json(); 
             })
             .then((updatedItems) => {
                 // Replace items with same productId
@@ -183,21 +183,20 @@ function AllItemsList({ permissionData }) {
 
     const editableDropdownCell = (field, options, rowData, labelField, valueField = field) => {
         if (editingRow && editingRow.parItemId === rowData.parItemId) {
-            // Add the "None" option to the dropdown options with the same structure as the other options
             const dropdownOptions = field === "subCatId"
                 ? [{
                     subCatId: null,
                     catId: null,
-                    subCatName: "None",  // Display "None" in the dropdown
-                    subCatDesc: "None",  // Optionally, you can set a description as well
+                    subCatName: "None",  
+                    subCatDesc: "None",
                     cat: null,
                     items: []
-                }, ...options] // Empty value for "None" option
+                }, ...options] 
                 : options;
 
             return (
                 <Dropdown
-                    value={editedItem[field] ?? ''} // Use empty string if null or undefined
+                    value={editedItem[field] ?? ''} 
                     options={dropdownOptions}
                     onChange={(e) => handleEditChange({ target: { value: e.value } }, field)}
                     optionLabel={labelField}
@@ -227,8 +226,8 @@ function AllItemsList({ permissionData }) {
 
     const intermediateFilteredItems = items.filter(item => {
         const matchesCountFilter =
-            selectedCountFilter === 'null' ? item.totalCount === null :
-                selectedCountFilter === '!null' ? item.totalCount !== null :
+            selectedCountFilter === 'null' ? item.serialNumber === null :
+                selectedCountFilter === '!null' ? item.serialNumber !== null :
                     true;
 
         const matchesProductFilter =
@@ -239,16 +238,16 @@ function AllItemsList({ permissionData }) {
 
     // Get available totalCount options based on filtered items
     const totalCountOptions = [];
-    if (intermediateFilteredItems.some(item => item.totalCount === null)) totalCountOptions.push('null');
-    if (intermediateFilteredItems.some(item => item.totalCount !== null)) totalCountOptions.push('!null');
+    if (intermediateFilteredItems.some(item => item.serialNumber === null)) totalCountOptions.push('null');
+    if (intermediateFilteredItems.some(item => item.serialNumber !== null)) totalCountOptions.push('!null');
 
     useEffect(() => {
         let result = [...items];
 
         if (selectedCountFilter === 'null') {
-            result = result.filter(i => i.totalCount === null);
+            result = result.filter(i => i.serialNumber === null);
         } else if (selectedCountFilter === '!null') {
-            result = result.filter(i => i.totalCount !== null);
+            result = result.filter(i => i.serialNumber !== null);
         }
 
         if (selectedProducts.length > 0) {
@@ -275,18 +274,7 @@ function AllItemsList({ permissionData }) {
         setFilteredItems(result);
     }, [items, selectedCountFilter, selectedProducts, selectedCategories, selectedSubCategories, onlyUnique]);
 
-    const dynamicFilteredItems = items.filter(item => {
-    const countMatch =
-        selectedCountFilter === 'null' ? item.totalCount === null :
-        selectedCountFilter === '!null' ? item.totalCount !== null :
-        true;
-
-    const productMatch = selectedProducts.length === 0 || selectedProducts.includes(item.productId);
-    const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(item.catId);
-    const subCategoryMatch = selectedSubCategories.length === 0 || selectedSubCategories.includes(item.subCatId);
-
-    return countMatch && productMatch && categoryMatch && subCategoryMatch;
-});
+    
     const productOptions = products
         .filter(p => {
             const matchingItems = items.filter(item => item.productId === p.productId);

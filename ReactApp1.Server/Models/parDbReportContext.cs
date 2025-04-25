@@ -19,7 +19,7 @@ public partial class parDbReportContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-            optionsBuilder.UseSqlServer("Server=NeuraLynx\\MSSQLSERVER01;Database=par_db;Integrated Security=True;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Data Source=LAPLET;Initial Catalog=par_db;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Application Intent=ReadWrite;Multi Subnet Failover=False");
         
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)

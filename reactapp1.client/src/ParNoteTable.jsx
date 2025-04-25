@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { InputText } from "primereact/inputtext";
+import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from "primereact/button";
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -346,7 +346,7 @@ function NotesTable({ userId }) {
                     <MultiSelect
                         value={selectedItems}
                         onChange={(e) => setSelectedItems(e.value)}
-                        options={itemOptions}  // Use the itemOptions here
+                        options={itemOptions} 
                         placeholder="Select Item"
                         display="chip"
                         className="w-full md:w-20rem"
@@ -358,7 +358,7 @@ function NotesTable({ userId }) {
                     <MultiSelect
                         value={selectedRules}
                         onChange={(e) => setSelectedRules(e.value)}
-                        options={ruleOptions}  // Use the itemOptions here
+                        options={ruleOptions}  
                         placeholder="Select Rule"
                         display="chip"
                         />
@@ -369,7 +369,7 @@ function NotesTable({ userId }) {
                     <MultiSelect
                         value={selectedUsers}
                         onChange={(e) => setSelectedUsers(e.value)}
-                        options={noteMakers}  // Use the itemOptions here
+                        options={noteMakers} 
                         placeholder="Select Users"
                         display="chip"
                     />
@@ -401,19 +401,17 @@ function NotesTable({ userId }) {
                             responsiveLayout="scroll"
                             dataKey="noteId"
                             filterDisplay="menu"
-                            style={{ maxWidth: "100%" }}  // Max width for responsiveness
-                            scrollable // Add scrolling
+                            style={{ maxWidth: "100%" }}  
+                            scrollable 
                             scrollHeight="400px"
                             selection={selectedRow}
-                            onSelectionChange={(e) => setSelectedRow(e.value)}  // Only one row will be selected at a time
+                            onSelectionChange={(e) => setSelectedRow(e.value)}  
                             selectionMode="single"
-                            style={{width:'1000px'} }
 
 
             >
                 <Column field="productId" header="Product Name" sortable body={(rowData) => getProductName(rowData.parItemId)} style={{ width: '250px' }} />
                 <Column field="ruleId" header="Rule ID" sortable />
-                <Column field="note" header="Note" body={(rowData) => editableCell("note", rowData)} />
                 <Column field="createdByUser" header="Created By" sortable body={(rowData) => getUserName(rowData.createdByUser)} />
                 <Column field="dateCreated" header="Date Created" body={(rowData) => formatDate(rowData.dateCreated)}/>
                 
@@ -454,17 +452,17 @@ function NotesTable({ userId }) {
                             style={{ width: "3rem" }}
                         />
                 </DataTable>
-                {selectedRow && (
-                            <div className="selected-note-container">
+                    <div className="selected-note-container">
                         <label htmlFor="selectedNote">Selected Note</label>
-                        <InputText
+                        <InputTextarea
                             id="selectedNote"
-                            value={selectedRow.note}
+                            value={selectedRow ? selectedRow.note : "Select a note"}
                             readOnly
+                            autoResize
                             className="w-full"
+                            style={{ maxHeight: '400px', overflowY: 'auto' }} 
                         />
                     </div>
-                        )}
                 </div>
                 {/* Confirmation Dialog */}
                 <Dialog

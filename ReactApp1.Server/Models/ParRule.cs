@@ -25,7 +25,10 @@ public partial class ParRule
 
     public DateTime? DateCreated { get; set; }
 
-    public virtual User CreatedByUserNavigation { get; set; } = null!;
+	public string? parSeenStatus { get; set; }
+
+	public string? orderStatus { get; set; }
+	public virtual User CreatedByUserNavigation { get; set; } = null!;
 
     public virtual Item ParItem { get; set; } = null!;
 
@@ -73,11 +76,17 @@ public static class ParRuleEndpoints
             // Step 2: If the rule is being set to active, deactivate any other active rule for the same ParItemId
             if (parRule.IsActive)
             {
-                var activeRules = await db.ParRules
-                    .Where(model => model.ParItemId == parRule.ParItemId && model.IsActive)
-                    .ToListAsync();
+				var productId = await db.Items
+	            .Where(i => i.ParItemId == parRule.ParItemId)
+	            .Select(i => i.ProductId)
+	            .FirstOrDefaultAsync();
 
-                foreach (var activeRule in activeRules)
+				var activeRules = await db.ParRules
+					.Where(rule => rule.IsActive && db.Items
+						.Any(item => item.ParItemId == rule.ParItemId && item.ProductId == productId))
+					.ToListAsync();
+
+				foreach (var activeRule in activeRules)
                 {
                     activeRule.IsActive = false;  // Deactivate other active rules
                     db.ParRules.Update(activeRule);
@@ -86,7 +95,9 @@ public static class ParRuleEndpoints
 
             // Step 3: Update the rule
             existingRule.ParItemId = parRule.ParItemId;
-            existingRule.RuleName = parRule.RuleName;
+			existingRule.parSeenStatus = parRule.parSeenStatus;
+			existingRule.orderStatus = parRule.orderStatus;
+			existingRule.RuleName = parRule.RuleName;
             existingRule.Description = parRule.Description;
             existingRule.ParValue = parRule.ParValue;
             existingRule.CreatedByUser = parRule.CreatedByUser;
@@ -106,11 +117,17 @@ public static class ParRuleEndpoints
             // Step 1: Deactivate any active rule for the same ParItemId
             if (parRule.IsActive)
             {
-                var activeRules = await db.ParRules
-                    .Where(model => model.ParItemId == parRule.ParItemId && model.IsActive)
-                    .ToListAsync();
+				var productId = await db.Items
+				.Where(i => i.ParItemId == parRule.ParItemId)
+				.Select(i => i.ProductId)
+				.FirstOrDefaultAsync();
 
-                foreach (var activeRule in activeRules)
+				var activeRules = await db.ParRules
+					.Where(rule => rule.IsActive && db.Items
+						.Any(item => item.ParItemId == rule.ParItemId && item.ProductId == productId))
+					.ToListAsync();
+
+				foreach (var activeRule in activeRules)
                 {
                     activeRule.IsActive = false;  // Deactivate other active rules
                     db.ParRules.Update(activeRule);
